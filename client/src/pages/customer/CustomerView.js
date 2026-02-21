@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import T from "../../theme";
 import Icons from "../../Icons";
+import CartPage from "./CartPage";
 
 const sampleRestaurants = [
   { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: "🍽️" },
@@ -18,32 +19,25 @@ const sampleMenu = [
   { id: 6, name: "Garlic Fries", desc: "Crispy fries tossed with roasted garlic", price: 5.99, img: "🍟", cat: "Appetizers" },
 ];
 
-export default function CustomerView() {
+export default function CustomerView({ cart, addToCart, removeFromCart, customerTab, setCustomerTab }) {
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
-  const [cart, setCart] = useState([]);
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
 
-  // Increment qty by 1
-  const addToCart = (item) => {
-    setCart(prev => {
-      const ex = prev.find(c => c.id === item.id);
-      if (ex) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { ...item, qty: 1 }];
-    });
-  };
-
-  // Decrement qty by 1; remove item entirely when qty reaches 0
-  const removeFromCart = (item) => {
-    setCart(prev => {
-      const ex = prev.find(c => c.id === item.id);
-      if (!ex) return prev;
-      if (ex.qty === 1) return prev.filter(c => c.id !== item.id);
-      return prev.map(c => c.id === item.id ? { ...c, qty: c.qty - 1 } : c);
-    });
-  };
+  // ─── Cart Page ───
+  if (customerTab === "cart") {
+    return (
+      <CartPage
+        cart={cart}
+        removeFromCart={removeFromCart}
+        setCustomerTab={setCustomerTab}
+        cartTotal={cartTotal}
+        cartCount={cartCount}
+      />
+    );
+  }
 
   // ─── Restaurant List ───
   if (view === "list") {
@@ -99,7 +93,7 @@ export default function CustomerView() {
         maxWidth: 540, margin: "0 auto", padding: "32px 20px",
         paddingBottom: cartCount > 0 ? 100 : 32,
       }}>
-        <button onClick={() => { setView("list"); setCart([]); }} style={{
+        <button onClick={() => setView("list")} style={{
           background: "none", border: "none", color: T.accent, fontSize: 15,
           fontWeight: 500, cursor: "pointer", fontFamily: T.fontText, padding: 0, marginBottom: 16,
         }}>← Back</button>
@@ -137,7 +131,6 @@ export default function CustomerView() {
                     </div>
                   </div>
 
-                  {/* ── Stepper: shows − qty + when item is in cart, otherwise a plain + ── */}
                   <AnimatePresence mode="wait" initial={false}>
                     {inCart ? (
                       <motion.div
@@ -216,12 +209,14 @@ export default function CustomerView() {
               borderTop: `1px solid ${T.border}`,
             }}
           >
-            <button style={{
-              width: "100%", maxWidth: 500, margin: "0 auto",
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-              padding: "16px 24px", borderRadius: 16, border: "none",
-              background: T.accent, color: "#FFF", cursor: "pointer", fontFamily: T.font,
-            }}>
+            <button
+              onClick={() => setCustomerTab("cart")}
+              style={{
+                width: "100%", maxWidth: 500, margin: "0 auto",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "16px 24px", borderRadius: 16, border: "none",
+                background: T.accent, color: "#FFF", cursor: "pointer", fontFamily: T.font,
+              }}>
               <span style={{ fontSize: 16, fontWeight: 600 }}>View Cart ({cartCount})</span>
               <span style={{ fontSize: 16, fontWeight: 700 }}>${cartTotal.toFixed(2)}</span>
             </button>

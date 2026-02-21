@@ -19,6 +19,25 @@ const viewLabels = {
 export default function App() {
   const [mode, setMode] = useState("owner");
   const [activeTab, setActiveTab] = useState("menu");
+  const [customerTab, setCustomerTab] = useState("browse");
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (item) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { ...item, qty: 1 }];
+    });
+  };
+
+  const removeFromCart = (item) => {
+    setCart(prev => {
+      const ex = prev.find(c => c.id === item.id);
+      if (!ex) return prev;
+      if (ex.qty === 1) return prev.filter(c => c.id !== item.id);
+      return prev.map(c => c.id === item.id ? { ...c, qty: c.qty - 1 } : c);
+    });
+  };
 
   return (
     <div style={{ fontFamily: T.font }}>
@@ -70,7 +89,13 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <CustomerView />
+          <CustomerView
+            cart={cart}
+            addToCart={addToCart}
+            removeFromCart={removeFromCart}
+            customerTab={customerTab}
+            setCustomerTab={setCustomerTab}
+          />
         )}
       </div>
     </div>
