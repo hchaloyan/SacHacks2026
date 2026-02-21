@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import T from "../../theme";
 import Icons from "../../Icons";
 
@@ -26,11 +26,22 @@ export default function CustomerView() {
   const cartTotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
 
+  // Increment qty by 1
   const addToCart = (item) => {
     setCart(prev => {
       const ex = prev.find(c => c.id === item.id);
       if (ex) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
       return [...prev, { ...item, qty: 1 }];
+    });
+  };
+
+  // Decrement qty by 1; remove item entirely when qty reaches 0
+  const removeFromCart = (item) => {
+    setCart(prev => {
+      const ex = prev.find(c => c.id === item.id);
+      if (!ex) return prev;
+      if (ex.qty === 1) return prev.filter(c => c.id !== item.id);
+      return prev.map(c => c.id === item.id ? { ...c, qty: c.qty - 1 } : c);
     });
   };
 
@@ -125,17 +136,68 @@ export default function CustomerView() {
                       <p style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font, marginTop: 4 }}>${item.price.toFixed(2)}</p>
                     </div>
                   </div>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => addToCart(item)}
-                    style={{
-                      width: 36, height: 36, borderRadius: 18, border: "none",
-                      background: inCart ? T.accent : T.bg, color: inCart ? "#FFF" : T.accent,
-                      fontSize: 16, cursor: "pointer", display: "flex",
-                      alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      fontWeight: 600, fontFamily: T.font,
-                    }}
-                  >{inCart ? inCart.qty : "+"}</motion.button>
+
+                  {/* ── Stepper: shows − qty + when item is in cart, otherwise a plain + ── */}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {inCart ? (
+                      <motion.div
+                        key="stepper"
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.85 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 4,
+                          background: T.accent, borderRadius: 20, padding: "4px 6px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <motion.button
+                          whileTap={{ scale: 0.85 }}
+                          onClick={() => removeFromCart(item)}
+                          style={{
+                            width: 28, height: 28, borderRadius: 14, border: "none",
+                            background: "rgba(255,255,255,0.25)", color: "#FFF",
+                            fontSize: 18, lineHeight: 1, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 700, fontFamily: T.font, flexShrink: 0,
+                          }}
+                        >−</motion.button>
+                        <span style={{
+                          minWidth: 20, textAlign: "center",
+                          fontSize: 14, fontWeight: 700, color: "#FFF", fontFamily: T.font,
+                        }}>{inCart.qty}</span>
+                        <motion.button
+                          whileTap={{ scale: 0.85 }}
+                          onClick={() => addToCart(item)}
+                          style={{
+                            width: 28, height: 28, borderRadius: 14, border: "none",
+                            background: "rgba(255,255,255,0.25)", color: "#FFF",
+                            fontSize: 18, lineHeight: 1, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 700, fontFamily: T.font, flexShrink: 0,
+                          }}
+                        >+</motion.button>
+                      </motion.div>
+                    ) : (
+                      <motion.button
+                        key="add"
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.85 }}
+                        transition={{ duration: 0.15 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => addToCart(item)}
+                        style={{
+                          width: 36, height: 36, borderRadius: 18, border: "none",
+                          background: T.bg, color: T.accent,
+                          fontSize: 16, cursor: "pointer", display: "flex",
+                          alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          fontWeight: 600, fontFamily: T.font,
+                        }}
+                      >+</motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}
