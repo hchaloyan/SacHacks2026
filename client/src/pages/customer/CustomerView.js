@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import T from "../../theme";
 import Icons from "../../Icons";
 import CartPage from "./CartPage";
+import CheckoutPage from "./CheckoutPage";
 
 const sampleRestaurants = [
   { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: "🍽️" },
@@ -36,6 +37,17 @@ export default function CustomerView({ cart, addToCart, removeFromCart, customer
         setCustomerTab={setCustomerTab}
         cartTotal={cartTotal}
         cartCount={cartCount}
+      />
+    );
+  }
+
+  // ─── Checkout Page ───
+  if (customerTab === "checkout") {
+    return (
+      <CheckoutPage
+        cart={cart}
+        cartTotal={cartTotal}
+        setCustomerTab={setCustomerTab}
       />
     );
   }
