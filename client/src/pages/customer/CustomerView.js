@@ -31,6 +31,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, customer
     return (
       <CartPage
         cart={cart}
+        addToCart={addToCart}
         removeFromCart={removeFromCart}
         setCustomerTab={setCustomerTab}
         cartTotal={cartTotal}
