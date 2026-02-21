@@ -1,0 +1,52 @@
+{
+  "menu": [
+    {
+      "id": 1771715117211,
+      "name": "Water",
+      "items": []
+    }
+  ],
+  "orders": [],
+  "hours": {
+    "Monday": {
+      "open": "00:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Tuesday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Wednesday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Thursday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Friday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Saturday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    },
+    "Sunday": {
+      "open": "11:00",
+      "close": "21:00",
+      "closed": false
+    }
+  },
+  "financials": {
+    "totalRevenue": 0,
+    "totalOrders": 0,
+    "avgOrderValue": 0
+  }
+}
