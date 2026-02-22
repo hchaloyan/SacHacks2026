@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import T from "../../theme";
 import { api } from "../../api";
 
-export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCart }) {
+export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCart, restaurant }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [deliveryType, setDeliveryType] = useState("bike");
@@ -26,19 +26,23 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
     setError("");
     setLoading(true);
     try {
-      await api.createOrder({
-        customerName: name,
-        address,
-        deliveryType,
-        items: cart.map(item => ({
-          id: item.id,
-          name: item.name,
-          qty: item.qty,
-          deliveryPrice: item.price,
-        })),
-        total,
-        status: "pending",
-      });
+      if (restaurant?.id === 1) {
+        // Boolen Kitchen only — send order to backend
+        await api.createOrder({
+          customerName: name,
+          address,
+          deliveryType,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            qty: item.qty,
+            deliveryPrice: item.price,
+          })),
+          total,
+          status: "pending",
+        });
+      }
+      // For other restaurants, skip the API call silently
       clearCart();
       setCustomerTab("confirmation");
     } catch (err) {
@@ -58,7 +62,7 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
 
       <h2 style={{ fontSize: 24, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 24 }}>Checkout</h2>
 
-      {/* ─── Contact Info ─── */}
+      {/* Contact Info */}
       <div style={{ marginBottom: 28 }}>
         <h3 style={{ fontSize: 13, fontWeight: 600, color: T.sub, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Your Info</h3>
         <div style={{ marginBottom: 12 }}>
@@ -89,12 +93,10 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
         </div>
       </div>
 
-      {/* ─── Delivery Type ─── */}
+      {/* Delivery Type */}
       <div style={{ marginBottom: 28 }}>
         <h3 style={{ fontSize: 13, fontWeight: 600, color: T.sub, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Delivery Method</h3>
         <div style={{ display: "flex", gap: 12 }}>
-
-          {/* Bike Option */}
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => setDeliveryType("bike")}
@@ -112,8 +114,6 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
               Only 5% commission (${bikeCommission.toFixed(2)}) vs DoorDash's ~25% (${(cartTotal * 0.25).toFixed(2)})
             </div>
           </motion.button>
-
-          {/* Driver Option */}
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => setDeliveryType("driver")}
@@ -134,7 +134,7 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
         </div>
       </div>
 
-      {/* ─── Order Summary ─── */}
+      {/* Order Summary */}
       <div style={{
         padding: 20, background: T.card, borderRadius: 16,
         border: `1px solid ${T.border}`, marginBottom: 24,
@@ -162,7 +162,6 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
         </div>
       </div>
 
-      {/* ─── Error ─── */}
       {error && (
         <div style={{
           background: "#FFF2F2", border: `1px solid ${T.red}30`, borderRadius: 10,
@@ -170,7 +169,6 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
         }}>{error}</div>
       )}
 
-      {/* ─── Place Order Button ─── */}
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={handlePlaceOrder}

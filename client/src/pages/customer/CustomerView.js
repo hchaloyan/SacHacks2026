@@ -49,6 +49,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
         cartTotal={cartTotal}
         setCustomerTab={setCustomerTab}
         clearCart={clearCart}
+        restaurant={selected}
       />
     );
   }
