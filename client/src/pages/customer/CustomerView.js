@@ -331,7 +331,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
 
   // ─── Confirmation Page ───
   if (customerTab === "confirmation") {
-    const orderNum = Math.floor(10000 + Math.random() * 90000);
     return (
       <div style={{
         background: T.bg, minHeight: "calc(100vh - 52px)",
@@ -380,24 +379,11 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             </h1>
             <p style={{
               fontSize: 16, color: T.sub, fontFamily: T.fontText,
-              lineHeight: 1.6, marginBottom: 28,
+              lineHeight: 1.6, marginBottom: 36,
             }}>
               Your order has been received.
             </p>
 
-            {/* Order number badge */}
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "10px 20px", borderRadius: 12,
-              background: T.bg, border: `1px solid ${T.border}`,
-              marginBottom: 36,
-            }}>
-              <span style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>Order</span>
-              <span style={{ fontSize: 16, fontWeight: 800, color: T.accent, fontFamily: T.font }}>
-                #{orderNum}
-              </span>
-            </div>
-            
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
