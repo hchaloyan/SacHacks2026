@@ -228,7 +228,7 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setCustomerTab("checkout")}
+                onClick={() => setCustomerTab("cart")}
                 style={{
                   width: "100%", padding: "14px", borderRadius: 12, border: "none",
                   background: T.accent, color: "#fff", cursor: "pointer",
@@ -236,7 +236,7 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
                   display: "flex", justifyContent: "space-between",
                 }}
               >
-                <span>Go to Checkout</span>
+                <span>View Cart</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </motion.button>
             </div>
@@ -468,6 +468,27 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
       {view === "menu" && selected && (() => {
         const cats = [...new Set(sampleMenu.map(m => m.cat))];
         return (
+          <div style={{ background: T.bg }}>
+            {/* Back bar */}
+            <div style={{
+              background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)",
+              borderBottom: `1px solid ${T.border}`, padding: "0 40px",
+              display: "flex", alignItems: "center", gap: 12, height: 52,
+              position: "sticky", top: 112, zIndex: 99,
+            }}>
+              <button
+                onClick={() => { setSelected(null); setView("list"); }}
+                style={{
+                  background: "none", border: "none", color: T.accent, fontSize: 15,
+                  fontWeight: 600, cursor: "pointer", fontFamily: T.font,
+                  display: "flex", alignItems: "center", gap: 6, padding: 0,
+                }}
+              >← Restaurants</button>
+              <span style={{ color: T.sub }}>›</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>
+                {selected.name}
+              </span>
+            </div>
           <div style={{
             maxWidth: 1200, margin: "0 auto", padding: "32px 40px",
             display: "flex", gap: 40, alignItems: "flex-start",
@@ -619,6 +640,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
               cartCount={cartCount}
               setCustomerTab={setCustomerTab}
             />
+          </div>
           </div>
         );
       })()}
