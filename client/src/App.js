@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import T from "./theme";
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/owner/Dashboard";
-import Orders from "./pages/owner/Orders";
-import MenuManager from "./pages/owner/MenuManager";
-import BusinessHours from "./pages/owner/BusinessHours";
-import Financials from "./pages/owner/Financials";
+import Dashboard from "./pages/business/Dashboard";
+import Orders from "./pages/business/Orders";
+import MenuManager from "./pages/business/MenuManager";
+import BusinessHours from "./pages/business/BusinessHours";
+import Financials from "./pages/business/Financials";
 import CustomerView from "./pages/customer/CustomerView";
 
 const viewLabels = {
@@ -66,7 +66,7 @@ export default function App() {
                 boxShadow: mode === m ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
                 transition: "all 0.2s",
               }}
-            >{m === "owner" ? "Owner View" : "Customer View"}</button>
+            >{m === "owner" ? "Business View" : "Customer View"}</button>
           ))}
         </div>
       </div>
