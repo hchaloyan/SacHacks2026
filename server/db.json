@@ -2,6 +2,106 @@
   "menu": [],
   "orders": [
     {
+      "id": 1006,
+      "orderNumber": 1006,
+      "items": [
+        {
+          "id": 1,
+          "name": "Classic Burger",
+          "qty": 3,
+          "deliveryPrice": 12.99
+        }
+      ],
+      "total": 40.96,
+      "customerName": "no",
+      "address": "qewreq",
+      "deliveryType": "bike",
+      "status": "pending",
+      "restaurantId": 4,
+      "restaurantName": "Guads Tacos",
+      "createdAt": "2026-02-22T11:02:38.244Z"
+    },
+    {
+      "id": 1005,
+      "orderNumber": 1005,
+      "items": [
+        {
+          "id": 3,
+          "name": "Margherita Pizza",
+          "qty": 1,
+          "deliveryPrice": 14.99
+        }
+      ],
+      "total": 16.98,
+      "customerName": "yes",
+      "address": "adaf",
+      "deliveryType": "bike",
+      "status": "pending",
+      "restaurantId": 1,
+      "restaurantName": "Boolen Kitchen",
+      "createdAt": "2026-02-22T11:02:26.042Z"
+    },
+    {
+      "id": 1004,
+      "orderNumber": 1004,
+      "items": [
+        {
+          "id": 3,
+          "name": "Margherita Pizza",
+          "qty": 3,
+          "deliveryPrice": 14.99
+        }
+      ],
+      "total": 46.96,
+      "customerName": "no",
+      "address": "A",
+      "deliveryType": "bike",
+      "status": "pending",
+      "restaurantId": 2,
+      "restaurantName": "Woodstock's Pizza",
+      "createdAt": "2026-02-22T11:02:14.534Z"
+    },
+    {
+      "id": 1003,
+      "orderNumber": 1003,
+      "items": [
+        {
+          "id": 1,
+          "name": "Classic Burger",
+          "qty": 3,
+          "deliveryPrice": 12.99
+        }
+      ],
+      "total": 40.96,
+      "customerName": "yes",
+      "address": "yes",
+      "deliveryType": "bike",
+      "status": "pending",
+      "restaurantId": 1,
+      "restaurantName": "Boolen Kitchen",
+      "createdAt": "2026-02-22T10:52:05.378Z"
+    },
+    {
+      "id": 1002,
+      "orderNumber": 1002,
+      "items": [
+        {
+          "id": 1,
+          "name": "Classic Burger",
+          "qty": 3,
+          "deliveryPrice": 12.99
+        }
+      ],
+      "total": 40.96,
+      "customerName": "no",
+      "address": "no",
+      "deliveryType": "bike",
+      "status": "pending",
+      "restaurantId": 2,
+      "restaurantName": "Woodstock's Pizza",
+      "createdAt": "2026-02-22T10:51:54.065Z"
+    },
+    {
       "id": 1001,
       "orderNumber": 1001,
       "customerName": "Order Test #11",
@@ -64,9 +164,9 @@
     }
   },
   "financials": {
-    "totalRevenue": 29.97,
-    "totalOrders": 1,
-    "avgOrderValue": 29.97
+    "totalRevenue": 216.79,
+    "totalOrders": 6,
+    "avgOrderValue": 36.13
   },
-  "orderCounter": 1001
+  "orderCounter": 1006
 }
