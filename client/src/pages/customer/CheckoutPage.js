@@ -1,3 +1,4 @@
+import { api } from "../../api";
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import T from "../../theme";
@@ -15,13 +16,34 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
   const deliveryFee = deliveryType === "bike" ? bikeFee : driverFee;
   const total = cartTotal + deliveryFee;
 
-  const handlePlaceOrder = () => {
-    if (!name || !address) {
-      alert("Please fill in your name and address.");
-      return;
-    }
-    setCustomerTab("confirmation");
+  const handlePlaceOrder = async () => {
+  if (!name || !address) {
+    alert("Please fill in your name and address.");
+    return;
+  }
+
+  const order = {
+    items: cart.map(item => ({
+      id: item.id,
+      name: item.name,
+      qty: item.qty,
+      deliveryPrice: item.price,
+    })),
+    total: cartTotal + deliveryFee,
+    customerName: name,
+    address,
+    deliveryType,
+    status: "pending",
   };
+
+  try {
+    await api.createOrder(order);
+    setCustomerTab("confirmation");
+  } catch (err) {
+    console.error("Failed to place order:", err);
+    alert("Something went wrong placing your order. Please try again.");
+  }
+};
 
   const inputStyle = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
