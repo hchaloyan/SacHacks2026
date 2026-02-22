@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import T from "../../theme";
-import { api } from "../../api";
 
-export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCart, restaurant }) {
+export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [deliveryType, setDeliveryType] = useState("bike");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const bikeFee = 1.99;
   const driverFee = 4.99;
@@ -18,170 +15,203 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCar
   const deliveryFee = deliveryType === "bike" ? bikeFee : driverFee;
   const total = cartTotal + deliveryFee;
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!name || !address) {
-      setError("Please fill in your name and address.");
+      alert("Please fill in your name and address.");
       return;
     }
-    setError("");
-    setLoading(true);
-    try {
-      if (restaurant?.id === 1) {
-        // Boolen Kitchen only — send order to backend
-        await api.createOrder({
-          customerName: name,
-          address,
-          deliveryType,
-          items: cart.map(item => ({
-            id: item.id,
-            name: item.name,
-            qty: item.qty,
-            deliveryPrice: item.price,
-          })),
-          total,
-          status: "pending",
-        });
-      }
-      // For other restaurants, skip the API call silently
-      clearCart();
-      setCustomerTab("confirmation");
-    } catch (err) {
-      console.error("Failed to place order:", err);
-      setError("Something went wrong placing your order. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setCustomerTab("confirmation");
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "12px 16px", borderRadius: 10,
+    border: `1px solid ${T.border}`, fontSize: 15, fontFamily: T.fontText,
+    outline: "none", boxSizing: "border-box", background: T.bg, color: T.text,
   };
 
   return (
-    <div style={{ maxWidth: 540, margin: "0 auto", padding: 32, fontFamily: T.fontText }}>
-      <button onClick={() => setCustomerTab("cart")} style={{
-        background: "none", border: "none", color: T.accent, fontSize: 15,
-        fontWeight: 500, cursor: "pointer", padding: 0, marginBottom: 20, fontFamily: T.fontText,
-      }}>← Back to Cart</button>
-
-      <h2 style={{ fontSize: 24, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 24 }}>Checkout</h2>
-
-      {/* Contact Info */}
-      <div style={{ marginBottom: 28 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: T.sub, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Your Info</h3>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: T.sub, marginBottom: 6 }}>Name</label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="John Smith"
-            style={{
-              width: "100%", padding: "10px 14px", borderRadius: 10,
-              border: `1px solid ${T.border}`, fontSize: 15, fontFamily: T.fontText,
-              outline: "none", boxSizing: "border-box", background: T.bg,
-            }}
-          />
-        </div>
-        <div>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: T.sub, marginBottom: 6 }}>Delivery Address</label>
-          <input
-            value={address}
-            onChange={e => setAddress(e.target.value)}
-            placeholder="123 Main St, Davis, CA"
-            style={{
-              width: "100%", padding: "10px 14px", borderRadius: 10,
-              border: `1px solid ${T.border}`, fontSize: 15, fontFamily: T.fontText,
-              outline: "none", boxSizing: "border-box", background: T.bg,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Delivery Type */}
-      <div style={{ marginBottom: 28 }}>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: T.sub, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Delivery Method</h3>
-        <div style={{ display: "flex", gap: 12 }}>
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setDeliveryType("bike")}
-            style={{
-              flex: 1, padding: 16, borderRadius: 16, cursor: "pointer", textAlign: "left",
-              border: `2px solid ${deliveryType === "bike" ? T.accent : T.border}`,
-              background: deliveryType === "bike" ? `${T.accent}10` : T.card,
-              fontFamily: T.fontText,
-            }}
-          >
-            <div style={{ fontSize: 22, marginBottom: 6 }}>🚲</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Bike Delivery</div>
-            <div style={{ fontSize: 13, color: T.sub, marginTop: 2 }}>${bikeFee.toFixed(2)} fee</div>
-            <div style={{ fontSize: 11, color: T.accent, marginTop: 6, fontWeight: 500 }}>
-              Only 5% commission (${bikeCommission.toFixed(2)}) vs DoorDash's ~25% (${(cartTotal * 0.25).toFixed(2)})
-            </div>
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setDeliveryType("driver")}
-            style={{
-              flex: 1, padding: 16, borderRadius: 16, cursor: "pointer", textAlign: "left",
-              border: `2px solid ${deliveryType === "driver" ? T.accent : T.border}`,
-              background: deliveryType === "driver" ? `${T.accent}10` : T.card,
-              fontFamily: T.fontText,
-            }}
-          >
-            <div style={{ fontSize: 22, marginBottom: 6 }}>🚗</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Driver Delivery</div>
-            <div style={{ fontSize: 13, color: T.sub, marginTop: 2 }}>${driverFee.toFixed(2)} fee</div>
-            <div style={{ fontSize: 11, color: T.accent, marginTop: 6, fontWeight: 500 }}>
-              Only 12% commission (${driverCommission.toFixed(2)}) vs DoorDash's ~25% (${(cartTotal * 0.25).toFixed(2)})
-            </div>
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Order Summary */}
+    <div style={{ background: T.bg, minHeight: "calc(100vh - 52px)" }}>
+      {/* Page header bar */}
       <div style={{
-        padding: 20, background: T.card, borderRadius: 16,
-        border: `1px solid ${T.border}`, marginBottom: 24,
+        background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)",
+        borderBottom: `1px solid ${T.border}`, padding: "0 40px",
+        display: "flex", alignItems: "center", gap: 12, height: 60,
+        position: "sticky", top: 52, zIndex: 100,
       }}>
-        <h3 style={{ fontSize: 13, fontWeight: 600, color: T.sub, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Order Summary</h3>
-        {cart.map(item => (
-          <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ fontSize: 14, color: T.text, fontFamily: T.fontText }}>{item.name} x{item.qty}</span>
-            <span style={{ fontSize: 14, color: T.text, fontFamily: T.fontText }}>${(item.price * item.qty).toFixed(2)}</span>
+        <button
+          onClick={() => setCustomerTab("cart")}
+          style={{
+            background: "none", border: "none", color: T.accent, fontSize: 15,
+            fontWeight: 600, cursor: "pointer", fontFamily: T.font, padding: 0,
+          }}
+        >← Cart</button>
+        <span style={{ color: T.sub }}>›</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>Checkout</span>
+      </div>
+
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "40px 40px" }}>
+        <h1 style={{
+          fontSize: 32, fontWeight: 800, color: T.text, fontFamily: T.font,
+          letterSpacing: "-0.03em", marginBottom: 32,
+        }}>Checkout</h1>
+
+        <div style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
+          {/* Left column: form */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 24 }}>
+
+            {/* Contact info */}
+            <div style={{
+              background: T.card, borderRadius: 20, border: `1px solid ${T.border}`,
+              padding: "24px 28px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 20 }}>
+                Your Info
+              </h2>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.sub, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: T.fontText }}>
+                  Full Name
+                </label>
+                <input
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="John Smith"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.sub, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: T.fontText }}>
+                  Delivery Address
+                </label>
+                <input
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  placeholder="123 Main St, Davis, CA"
+                  style={inputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Delivery method */}
+            <div style={{
+              background: T.card, borderRadius: 20, border: `1px solid ${T.border}`,
+              padding: "24px 28px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 20 }}>
+                Delivery Method
+              </h2>
+
+              <div style={{ display: "flex", gap: 16 }}>
+                {/* Bike */}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setDeliveryType("bike")}
+                  style={{
+                    flex: 1, padding: "20px 16px", borderRadius: 16, cursor: "pointer",
+                    textAlign: "left", border: `2px solid ${deliveryType === "bike" ? T.accent : T.border}`,
+                    background: deliveryType === "bike" ? `${T.accent}08` : T.bg,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <p style={{ fontSize: 28, marginBottom: 8 }}>🚲</p>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Bike Delivery</p>
+                  <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>30–45 min</p>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: T.accent, fontFamily: T.font, marginTop: 10 }}>${bikeFee.toFixed(2)}</p>
+                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>🌱 Eco-friendly · Davis local</p>
+                </motion.button>
+
+                {/* Driver */}
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setDeliveryType("driver")}
+                  style={{
+                    flex: 1, padding: "20px 16px", borderRadius: 16, cursor: "pointer",
+                    textAlign: "left", border: `2px solid ${deliveryType === "driver" ? T.accent : T.border}`,
+                    background: deliveryType === "driver" ? `${T.accent}08` : T.bg,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <p style={{ fontSize: 28, marginBottom: 8 }}>🚗</p>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Driver Delivery</p>
+                  <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>15–25 min</p>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: T.accent, fontFamily: T.font, marginTop: 10 }}>${driverFee.toFixed(2)}</p>
+                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>⚡ Faster delivery</p>
+                </motion.button>
+              </div>
+
+              {/* Savings callout */}
+              <div style={{
+                marginTop: 16, padding: "14px 16px", borderRadius: 12,
+                background: `${T.accent}08`, border: `1px solid ${T.accent}25`,
+              }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: T.accent, fontFamily: T.fontText }}>
+                  💰 Restaurant savings vs DoorDash
+                </p>
+                <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
+                  {deliveryType === "bike"
+                    ? `Bike delivery charges the restaurant only 5% ($${bikeCommission.toFixed(2)}) vs DoorDash's ~25% ($${(cartTotal * 0.25).toFixed(2)})`
+                    : `Driver delivery charges the restaurant only 12% ($${driverCommission.toFixed(2)}) vs DoorDash's ~25% ($${(cartTotal * 0.25).toFixed(2)})`
+                  }
+                </p>
+              </div>
+            </div>
           </div>
-        ))}
-        <div style={{ borderTop: `1px solid ${T.border}`, marginTop: 12, paddingTop: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>Subtotal</span>
-            <span style={{ fontSize: 14, color: T.text, fontFamily: T.fontText }}>${cartTotal.toFixed(2)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>Delivery fee ({deliveryType === "bike" ? "🚲 Bike" : "🚗 Driver"})</span>
-            <span style={{ fontSize: 14, color: T.text, fontFamily: T.fontText }}>${deliveryFee.toFixed(2)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Total</span>
-            <span style={{ fontSize: 16, fontWeight: 700, color: T.accent, fontFamily: T.font }}>${total.toFixed(2)}</span>
+
+          {/* Right column: order summary */}
+          <div style={{ width: 320, flexShrink: 0 }}>
+            <div style={{
+              background: T.card, borderRadius: 20, border: `1px solid ${T.border}`,
+              overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+              position: "sticky", top: 120,
+            }}>
+              <div style={{ padding: "16px 20px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Order Summary</h3>
+              </div>
+              <div style={{ padding: "16px 20px" }}>
+                {cart.map(item => (
+                  <div key={item.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontSize: 14, color: T.text, fontFamily: T.fontText }}>
+                      {item.name} <span style={{ color: T.sub }}>×{item.qty}</span>
+                    </span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontText }}>
+                      ${(item.price * item.qty).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+                <div style={{ height: 1, background: T.border, margin: "14px 0" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>Subtotal</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontText }}>${cartTotal.toFixed(2)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>
+                    Delivery ({deliveryType === "bike" ? "🚲 Bike" : "🚗 Driver"})
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontText }}>${deliveryFee.toFixed(2)}</span>
+                </div>
+                <div style={{ height: 1, background: T.border, margin: "14px 0" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                  <span style={{ fontSize: 17, fontWeight: 700, color: T.text, fontFamily: T.font }}>Total</span>
+                  <span style={{ fontSize: 17, fontWeight: 800, color: T.accent, fontFamily: T.font }}>${total.toFixed(2)}</span>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handlePlaceOrder}
+                  style={{
+                    width: "100%", padding: "15px", borderRadius: 12, border: "none",
+                    background: T.accent, color: "#fff", cursor: "pointer",
+                    fontSize: 16, fontWeight: 700, fontFamily: T.font,
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                  }}
+                >
+                  <span>Place Order</span>
+                  <span>${total.toFixed(2)}</span>
+                </motion.button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      {error && (
-        <div style={{
-          background: "#FFF2F2", border: `1px solid ${T.red}30`, borderRadius: 10,
-          padding: "10px 14px", marginBottom: 16, color: T.red, fontSize: 13, fontWeight: 500,
-        }}>{error}</div>
-      )}
-
-      <motion.button
-        whileTap={{ scale: 0.98 }}
-        onClick={handlePlaceOrder}
-        disabled={loading}
-        style={{
-          width: "100%", padding: "16px 24px", borderRadius: 16, border: "none",
-          background: T.accent, color: "#FFF", fontSize: 16, fontWeight: 700,
-          cursor: loading ? "not-allowed" : "pointer", fontFamily: T.font,
-          opacity: loading ? 0.7 : 1, transition: "opacity 0.15s",
-        }}
-      >
-        {loading ? "Placing Order…" : `Place Order · $${total.toFixed(2)}`}
-      </motion.button>
     </div>
   );
 }
