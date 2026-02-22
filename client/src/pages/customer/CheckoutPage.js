@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import T from "../../theme";
+import { api } from "../../api";
 
-export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
+export default function CheckoutPage({ cart, cartTotal, setCustomerTab, clearCart }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [deliveryType, setDeliveryType] = useState("bike");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const bikeFee = 1.99;
   const driverFee = 4.99;
@@ -15,12 +18,35 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
   const deliveryFee = deliveryType === "bike" ? bikeFee : driverFee;
   const total = cartTotal + deliveryFee;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!name || !address) {
-      alert("Please fill in your name and address.");
+      setError("Please fill in your name and address.");
       return;
     }
-    setCustomerTab("confirmation");
+    setError("");
+    setLoading(true);
+    try {
+      await api.createOrder({
+        customerName: name,
+        address,
+        deliveryType,
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          qty: item.qty,
+          deliveryPrice: item.price,
+        })),
+        total,
+        status: "pending",
+      });
+      clearCart();
+      setCustomerTab("confirmation");
+    } catch (err) {
+      console.error("Failed to place order:", err);
+      setError("Something went wrong placing your order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,14 +102,15 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
               flex: 1, padding: 16, borderRadius: 16, cursor: "pointer", textAlign: "left",
               border: `2px solid ${deliveryType === "bike" ? T.accent : T.border}`,
               background: deliveryType === "bike" ? `${T.accent}10` : T.card,
-              transition: "all 0.2s",
+              fontFamily: T.fontText,
             }}
           >
-            <p style={{ fontSize: 24, marginBottom: 6 }}>🚲</p>
-            <p style={{ fontSize: 15, fontWeight: 700, color: T.text, fontFamily: T.font }}>Bike Delivery</p>
-            <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>30–45 min</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.accent, fontFamily: T.font, marginTop: 8 }}>${bikeFee.toFixed(2)} fee</p>
-            <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>🌱 Eco-friendly · Davis local</p>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>🚲</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Bike Delivery</div>
+            <div style={{ fontSize: 13, color: T.sub, marginTop: 2 }}>${bikeFee.toFixed(2)} fee</div>
+            <div style={{ fontSize: 11, color: T.accent, marginTop: 6, fontWeight: 500 }}>
+              Only 5% commission (${bikeCommission.toFixed(2)}) vs DoorDash's ~25% (${(cartTotal * 0.25).toFixed(2)})
+            </div>
           </motion.button>
 
           {/* Driver Option */}
@@ -94,32 +121,16 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
               flex: 1, padding: 16, borderRadius: 16, cursor: "pointer", textAlign: "left",
               border: `2px solid ${deliveryType === "driver" ? T.accent : T.border}`,
               background: deliveryType === "driver" ? `${T.accent}10` : T.card,
-              transition: "all 0.2s",
+              fontFamily: T.fontText,
             }}
           >
-            <p style={{ fontSize: 24, marginBottom: 6 }}>🚗</p>
-            <p style={{ fontSize: 15, fontWeight: 700, color: T.text, fontFamily: T.font }}>Driver Delivery</p>
-            <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>15–25 min</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: T.accent, fontFamily: T.font, marginTop: 8 }}>${driverFee.toFixed(2)} fee</p>
-            <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>⚡ Faster delivery</p>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>🚗</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Driver Delivery</div>
+            <div style={{ fontSize: 13, color: T.sub, marginTop: 2 }}>${driverFee.toFixed(2)} fee</div>
+            <div style={{ fontSize: 11, color: T.accent, marginTop: 6, fontWeight: 500 }}>
+              Only 12% commission (${driverCommission.toFixed(2)}) vs DoorDash's ~25% (${(cartTotal * 0.25).toFixed(2)})
+            </div>
           </motion.button>
-
-        </div>
-
-        {/* ─── Savings Callout ─── */}
-        <div style={{
-          marginTop: 12, padding: "12px 16px", borderRadius: 12,
-          background: `${T.accent}10`, border: `1px solid ${T.accent}30`,
-        }}>
-          <p style={{ fontSize: 13, color: T.accent, fontFamily: T.fontText, fontWeight: 600 }}>
-            💰 Restaurant savings vs DoorDash
-          </p>
-          <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
-            {deliveryType === "bike"
-              ? `Bike delivery charges the restaurant only 5% ($${bikeCommission.toFixed(2)}) vs DoorDash's ~25% ($${(cartTotal * 0.25).toFixed(2)})`
-              : `Driver delivery charges the restaurant only 12% ($${driverCommission.toFixed(2)}) vs DoorDash's ~25% ($${(cartTotal * 0.25).toFixed(2)})`
-            }
-          </p>
         </div>
       </div>
 
@@ -151,17 +162,27 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
         </div>
       </div>
 
+      {/* ─── Error ─── */}
+      {error && (
+        <div style={{
+          background: "#FFF2F2", border: `1px solid ${T.red}30`, borderRadius: 10,
+          padding: "10px 14px", marginBottom: 16, color: T.red, fontSize: 13, fontWeight: 500,
+        }}>{error}</div>
+      )}
+
       {/* ─── Place Order Button ─── */}
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={handlePlaceOrder}
+        disabled={loading}
         style={{
           width: "100%", padding: "16px 24px", borderRadius: 16, border: "none",
           background: T.accent, color: "#FFF", fontSize: 16, fontWeight: 700,
-          cursor: "pointer", fontFamily: T.font,
+          cursor: loading ? "not-allowed" : "pointer", fontFamily: T.font,
+          opacity: loading ? 0.7 : 1, transition: "opacity 0.15s",
         }}
       >
-        Place Order · ${total.toFixed(2)}
+        {loading ? "Placing Order…" : `Place Order · $${total.toFixed(2)}`}
       </motion.button>
     </div>
   );

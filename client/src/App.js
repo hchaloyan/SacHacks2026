@@ -40,6 +40,8 @@ export default function App() {
     });
   };
 
+  const clearCart = () => setCart([]);
+
   const handleLogout = () => {
     setMode(null);
     setCart([]);
@@ -112,6 +114,7 @@ export default function App() {
           cart={cart}
           addToCart={addToCart}
           removeFromCart={removeFromCart}
+          clearCart={clearCart}
           customerTab={customerTab}
           setCustomerTab={setCustomerTab}
         />

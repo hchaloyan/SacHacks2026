@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import T from "../../theme";
 import { api } from "../../api";
 
@@ -16,12 +16,39 @@ export default function Orders() {
   const [orders, setOrders]   = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter]   = useState("all");
+  const prevOrderIds = useRef(new Set());
+  const [newOrderIds, setNewOrderIds] = useState(new Set());
+
+  const fetchOrders = async (isInitial = false) => {
+    try {
+      const data = await api.getOrders();
+      if (!isInitial) {
+        const incoming = data.filter(o => !prevOrderIds.current.has(o.id));
+        if (incoming.length > 0) {
+          setNewOrderIds(prev => new Set([...prev, ...incoming.map(o => o.id)]));
+          // Clear "new" highlight after 8 seconds
+          setTimeout(() => {
+            setNewOrderIds(prev => {
+              const next = new Set(prev);
+              incoming.forEach(o => next.delete(o.id));
+              return next;
+            });
+          }, 8000);
+        }
+      }
+      prevOrderIds.current = new Set(data.map(o => o.id));
+      setOrders(data);
+    } catch (err) {
+      console.error("Failed to load orders:", err);
+    } finally {
+      if (isInitial) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    api.getOrders()
-      .then(data => setOrders(data))
-      .catch(err => console.error("Failed to load orders:", err))
-      .finally(() => setLoading(false));
+    fetchOrders(true);
+    const interval = setInterval(() => fetchOrders(false), 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const advanceStatus = async (order) => {
@@ -72,38 +99,86 @@ export default function Orders() {
 
   return (
     <div>
-      {/* Filter tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-        {["all", ...STATUS_FLOW, "cancelled"].map(s => (
-          <button key={s} onClick={() => setFilter(s)}
-            style={{
-              padding: "6px 14px", borderRadius: 20, border: "none",
-              background: filter === s ? T.accent : T.card,
-              color: filter === s ? "#FFF" : T.sub,
-              fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: T.fontText,
-              border: `1px solid ${filter === s ? "transparent" : T.border}`,
-              textTransform: "capitalize",
-            }}
-          >{s === "all" ? `All (${orders.length})` : s}</button>
-        ))}
+      {/* Header row with filter tabs and live indicator */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {["all", ...STATUS_FLOW, "cancelled"].map(s => (
+            <button key={s} onClick={() => setFilter(s)}
+              style={{
+                padding: "6px 14px", borderRadius: 20, border: "none",
+                background: filter === s ? T.accent : T.card,
+                color: filter === s ? "#FFF" : T.sub,
+                fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: T.fontText,
+                border: `1px solid ${filter === s ? "transparent" : T.border}`,
+                textTransform: "capitalize",
+              }}
+            >{s === "all" ? `All (${orders.length})` : s}</button>
+          ))}
+        </div>
+        {/* Live polling indicator */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: "50%", background: "#22C55E",
+            boxShadow: "0 0 0 2px #22C55E40",
+            animation: "pulse 2s infinite",
+          }} />
+          <span style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText }}>Live</span>
+        </div>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
 
       {/* Orders list */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {filtered.map(order => {
           const sc = STATUS_COLORS[order.status] || STATUS_COLORS.pending;
           const nextStatus = STATUS_FLOW[STATUS_FLOW.indexOf(order.status) + 1];
+          const isNew = newOrderIds.has(order.id);
           return (
             <div key={order.id} style={{
               background: T.card, borderRadius: 16, padding: 20,
-              border: `1px solid ${T.border}`,
+              border: `2px solid ${isNew ? T.accent : T.border}`,
+              animation: isNew ? "slideIn 0.3s ease" : "none",
+              transition: "border-color 0.5s",
             }}>
+              {isNew && (
+                <div style={{
+                  background: T.accent, color: "#FFF", fontSize: 11, fontWeight: 700,
+                  fontFamily: T.fontText, padding: "3px 10px", borderRadius: 20,
+                  display: "inline-block", marginBottom: 10, letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                }}>🔔 New Order</div>
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <div>
                   <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>
                     Order #{String(order.id).slice(-5)}
                   </span>
-                  <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 2 }}>
+                  {order.customerName && (
+                    <p style={{ fontSize: 13, color: T.text, fontFamily: T.fontText, marginTop: 2, fontWeight: 500 }}>
+                      👤 {order.customerName}
+                    </p>
+                  )}
+                  {order.address && (
+                    <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 1 }}>
+                      📍 {order.address}
+                    </p>
+                  )}
+                  {order.deliveryType && (
+                    <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 1 }}>
+                      {order.deliveryType === "bike" ? "🚲 Bike Delivery" : "🚗 Driver Delivery"}
+                    </p>
+                  )}
+                  <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
                     {new Date(order.createdAt).toLocaleString()}
                   </p>
                 </div>

@@ -20,7 +20,7 @@ const sampleMenu = [
   { id: 6, name: "Garlic Fries", desc: "Crispy fries tossed with roasted garlic", price: 5.99, img: "🍟", cat: "Appetizers" },
 ];
 
-export default function CustomerView({ cart, addToCart, removeFromCart, customerTab, setCustomerTab }) {
+export default function CustomerView({ cart, addToCart, removeFromCart, clearCart, customerTab, setCustomerTab }) {
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
 
@@ -48,7 +48,40 @@ export default function CustomerView({ cart, addToCart, removeFromCart, customer
         cart={cart}
         cartTotal={cartTotal}
         setCustomerTab={setCustomerTab}
+        clearCart={clearCart}
       />
+    );
+  }
+
+  // ─── Order Confirmation ───
+  if (customerTab === "confirmation") {
+    return (
+      <div style={{
+        minHeight: "100vh", background: T.bg,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 32, fontFamily: T.fontText,
+      }}>
+        <div style={{ textAlign: "center", maxWidth: 400 }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+          <h2 style={{ fontSize: 26, fontWeight: 800, color: T.text, fontFamily: T.font, marginBottom: 8 }}>
+            Order Placed!
+          </h2>
+          <p style={{ fontSize: 15, color: T.sub, marginBottom: 32, lineHeight: 1.6 }}>
+            Your order has been sent to the restaurant. You can track its status in the app.
+          </p>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => { setView("list"); setCustomerTab("browse"); }}
+            style={{
+              padding: "14px 32px", borderRadius: 14, border: "none",
+              background: T.accent, color: "#FFF", fontSize: 15, fontWeight: 700,
+              cursor: "pointer", fontFamily: T.font,
+            }}
+          >
+            Back to Restaurants
+          </motion.button>
+        </div>
+      </div>
     );
   }
 
@@ -72,23 +105,19 @@ export default function CustomerView({ cart, addToCart, removeFromCart, customer
               onClick={() => { setSelected(r); setView("menu"); }}
               style={{
                 display: "flex", alignItems: "center", gap: 16,
-                padding: 18, background: T.card, borderRadius: 16,
-                border: `1px solid ${T.border}`, cursor: "pointer",
-                textAlign: "left", width: "100%",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                padding: "16px 20px", background: T.card, borderRadius: 16,
+                border: `1px solid ${T.border}`, cursor: "pointer", textAlign: "left",
+                fontFamily: T.fontText,
               }}
             >
               <div style={{
-                width: 56, height: 56, borderRadius: 14, background: T.bg,
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0,
+                width: 52, height: 52, borderRadius: 12, background: T.bg,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0,
               }}>{r.img}</div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 17, fontWeight: 600, color: T.text, fontFamily: T.font }}>{r.name}</p>
-                <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 2 }}>{r.cuisine} · {r.time}</p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                {Icons.star}
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.fontText }}>{r.rating}</span>
+                <p style={{ fontSize: 16, fontWeight: 600, color: T.text, fontFamily: T.font }}>{r.name}</p>
+                <p style={{ fontSize: 13, color: T.sub, marginTop: 2 }}>{r.cuisine}</p>
+                <p style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>⭐ {r.rating} · {r.time}</p>
               </div>
             </motion.button>
           ))}
@@ -97,14 +126,14 @@ export default function CustomerView({ cart, addToCart, removeFromCart, customer
     );
   }
 
-  // ─── Menu View ───
+  // ─── Menu ───
   if (view === "menu" && selected) {
     const cats = [...new Set(sampleMenu.map(m => m.cat))];
     return (
       <div style={{
         minHeight: "100vh", background: T.bg,
-        maxWidth: 540, margin: "0 auto", padding: "32px 20px",
-        paddingBottom: cartCount > 0 ? 100 : 32,
+        maxWidth: 540, margin: "0 auto",
+        padding: cartCount > 0 ? "32px 20px 100px" : "32px 20px",
       }}>
         <button onClick={() => setView("list")} style={{
           background: "none", border: "none", color: T.accent, fontSize: 15,
