@@ -18,10 +18,10 @@ const getImg = (name) => {
 };
 
 const sampleRestaurants = [
-  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["0.5 miles", "CAR 8 min", "BIKE 8 min"] },
-  { id: 2, name: "Woodstock's Pizza", cuisine: "Italian", rating: 4.6, img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["0.6 miles", "CAR 8 min", "BIKE 10 min"] },
-  { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, img: getImg("hikari.png"), priceRange: "$$", tags: ["0.4 miles", "CAR 8 min", "BIKE 8 min"] },
-  { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, img: getImg("GuadsLogo.jpg"), priceRange: "$$", tags: ["0.4 miles", "CAR 7 min", "BIKE 6 min"] },
+  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["0.5 miles", "9-13 min"] },
+  { id: 2, name: "Woodstock's Pizza", cuisine: "Italian", rating: 4.6, img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["0.6 miles", "10-14 min"] },
+  { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, img: getImg("hikari.png"), priceRange: "$$", tags: ["0.4 miles", "9-13 min"] },
+  { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, img: getImg("GuadsLogo.jpg"), priceRange: "$$", tags: ["0.4 miles", "7-10 min"] },
 ];
 
 const sampleMenu = [
@@ -566,7 +566,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                           </span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 4, color: T.sub }}>
-                          <span>🕐</span>
+                          <span></span>
                           <span style={{ fontSize: 14, fontFamily: T.fontText }}>{selected.time}</span>
                         </div>
                       </div>
