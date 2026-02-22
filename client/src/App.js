@@ -18,10 +18,11 @@ const viewLabels = {
 };
 
 export default function App() {
-  const [mode, setMode] = useState(null); // null = logged out, "owner", "customer"
+  const [mode, setMode] = useState(null);
   const [activeTab, setActiveTab] = useState("menu");
   const [customerTab, setCustomerTab] = useState("browse");
   const [cart, setCart] = useState([]);
+  const [closingMode, setClosingMode] = useState(false);
 
   const addToCart = (item) => {
     setCart(prev => {
@@ -49,12 +50,11 @@ export default function App() {
     setActiveTab("menu");
   };
 
-  // ─── Login Screen ───
   if (!mode) {
     return <LoginPage onLogin={setMode} />;
   }
 
-  // ─── Owner / Business Dashboard ───
+  // ─── Owner Dashboard ───
   if (mode === "owner") {
     return (
       <div style={{ fontFamily: T.font, display: "flex", minHeight: "100vh" }}>
@@ -74,7 +74,7 @@ export default function App() {
               }}
             >Sign Out</button>
           </div>
-          {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "dashboard" && <Dashboard closingMode={closingMode} setClosingMode={setClosingMode} />}
           {activeTab === "orders" && <Orders />}
           {activeTab === "menu" && <MenuManager />}
           {activeTab === "hours" && <BusinessHours />}
@@ -87,7 +87,6 @@ export default function App() {
   // ─── Customer View ───
   return (
     <div style={{ fontFamily: T.font }}>
-      {/* Top bar with sign out */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 999,
         background: "rgba(255,255,255,0.85)",
@@ -117,6 +116,7 @@ export default function App() {
           clearCart={clearCart}
           customerTab={customerTab}
           setCustomerTab={setCustomerTab}
+          closingMode={closingMode}
         />
       </div>
     </div>
