@@ -21,7 +21,7 @@ const sampleRestaurants = [
   { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["Burgers", "Salads", "American"] },
   { id: 2, name: "WoodStock's Pizza", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
   { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, time: "15-25 min", img: getImg("hikari.png"), priceRange: "$$$", tags: ["Sushi", "Ramen", "Japanese"] },
-  { id: 4, name: "Taco Town", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: getImg("GuadsLogo.jpg"), priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
+  { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: getImg("GuadsLogo.jpg"), priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
 ];
 
 const sampleMenu = [
