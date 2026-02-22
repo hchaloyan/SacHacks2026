@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import T from "../../theme";
 import { api } from "../../api";
 
-export default function Dashboard() {
+export default function Dashboard({ closingMode, setClosingMode }) {
   const [financials, setFinancials] = useState(null);
   const [menuCount, setMenuCount]   = useState(0);
   const [todayOrders, setTodayOrders] = useState(0);
@@ -41,6 +41,78 @@ export default function Dashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* ── Closing Mode Card ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+        style={{
+          background: T.card, borderRadius: 16, padding: "22px 28px",
+          border: `1.5px solid ${closingMode ? T.orange : T.border}`,
+          marginBottom: 20,
+          boxShadow: closingMode ? `0 0 0 3px ${T.orange}15` : "none",
+          transition: "border-color 0.25s, box-shadow 0.25s",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 42, height: 42, borderRadius: 12,
+              background: closingMode ? `${T.orange}18` : T.bg,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 22, transition: "background 0.25s",
+            }}>
+              🏷️
+            </div>
+            <div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 2 }}>
+                Closing
+              </p>
+              <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText }}>
+                {closingMode
+                  ? "Active — customers are being offered a closing bundle deal"
+                  : "Offer customers a random discounted bundle when ordering from Boolen Kitchen"}
+              </p>
+            </div>
+          </div>
+
+          {/* Toggle Slider */}
+          <button
+            onClick={() => setClosingMode(v => !v)}
+            style={{
+              width: 52, height: 30, borderRadius: 15, border: "none",
+              background: closingMode ? T.orange : "#E5E5EA",
+              cursor: "pointer", position: "relative",
+              transition: "background 0.25s",
+              flexShrink: 0,
+            }}
+          >
+            <motion.div
+              animate={{ left: closingMode ? 24 : 2 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              style={{
+                width: 26, height: 26, borderRadius: 13, background: "#FFF",
+                position: "absolute", top: 2,
+                boxShadow: "0 1px 4px rgba(0,0,0,0.22)",
+              }}
+            />
+          </button>
+        </div>
+
+        {closingMode && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{
+              marginTop: 16, padding: "10px 14px", borderRadius: 10,
+              background: `${T.orange}10`, border: `1px solid ${T.orange}30`,
+              fontSize: 13, color: T.orange, fontFamily: T.fontText, fontWeight: 500,
+            }}
+          >
+            ✓ Closing mode is live — customers ordering from Boolen Kitchen will be offered a random bundle at <strong>35% off</strong>.
+          </motion.div>
+        )}
+      </motion.div>
 
       <div style={{
         background: T.card, borderRadius: 16, padding: 28,

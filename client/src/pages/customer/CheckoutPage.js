@@ -136,9 +136,8 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
                 >
                   <p style={{ fontSize: 28, marginBottom: 8 }}>🚲</p>
                   <p style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Bike Delivery</p>
-                  <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>30–45 min</p>
                   <p style={{ fontSize: 18, fontWeight: 800, color: T.accent, fontFamily: T.font, marginTop: 10 }}>${bikeFee.toFixed(2)}</p>
-                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>🌱 Eco-friendly · Davis local</p>
+                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}> Eco-friendly - Local</p>
                 </motion.button>
 
                 {/* Driver */}
@@ -154,9 +153,8 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
                 >
                   <p style={{ fontSize: 28, marginBottom: 8 }}>🚗</p>
                   <p style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>Driver Delivery</p>
-                  <p style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>15–25 min</p>
                   <p style={{ fontSize: 18, fontWeight: 800, color: T.accent, fontFamily: T.font, marginTop: 10 }}>${driverFee.toFixed(2)}</p>
-                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>⚡ Faster delivery</p>
+                  <p style={{ fontSize: 11, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}> Long Distance </p>
                 </motion.button>
               </div>
 

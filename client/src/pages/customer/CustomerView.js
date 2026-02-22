@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import T from "../../theme";
 import Icons from "../../Icons";
@@ -9,10 +9,8 @@ const imageContext = require.context('./images', false, /\.(png|jpe?g|svg|webp|a
 
 const getImg = (name) => {
   try {
-    // This finds the image in your ./images folder
     return imageContext(`./${name}`);
   } catch (err) {
-    // If filename isn't found, it returns the string (good for emojis)
     return name;
   }
 };
@@ -35,9 +33,8 @@ const sampleMenu = [
 
 const categories = ["All", "American", "Italian", "Japanese", "Mexican", "BBQ", "Healthy"];
 
-// ─── Smart Image Helper ───
-// Renders a file path as <img> or an emoji/text as a plain span.
-// Usage: <ImgOrEmoji src={item.img} size={60} style={{...}} />
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
 function ImgOrEmoji({ src, size = 48, style = {}, alt = "" }) {
   const isPath = typeof src === "string" && (
     src.startsWith("/") || src.startsWith("./") || src.startsWith("../") ||
@@ -45,23 +42,178 @@ function ImgOrEmoji({ src, size = 48, style = {}, alt = "" }) {
     /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(src)
   );
   if (isPath) {
-    return (
-      <img
-        src={src}
-        alt={alt}
-        style={{
-          width: size, height: size,
-          objectFit: "cover", borderRadius: 8,
-          ...style,
-        }}
-      />
-    );
+    return <img src={src} alt={alt} style={{ width: size, height: size, objectFit: "cover", borderRadius: 8, ...style }} />;
   }
   return <span style={{ fontSize: size, lineHeight: 1, ...style }}>{src}</span>;
 }
 
-// ─── Top Navbar ───
-function CustomerNav({ cartCount, cartTotal, setCustomerTab, view, setView, selectedRestaurant }) {
+// ─── Closing Bundle Modal ────────────────────────────────────────────────────
+
+function ClosingBundleModal({ bundle, onAccept, onDecline }) {
+  const originalTotal = bundle.reduce((s, i) => s + i.price, 0);
+  const discountedTotal = originalTotal * 0.65;
+  const savings = originalTotal - discountedTotal;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onDecline}
+        style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(4px)",
+        }}
+      />
+
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 28 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 28 }}
+        transition={{ type: "spring", stiffness: 400, damping: 28 }}
+        style={{
+          position: "fixed", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 1001,
+          width: "min(480px, 92vw)",
+          background: T.card,
+          borderRadius: 24,
+          overflow: "hidden",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          background: `linear-gradient(135deg, ${T.orange} 0%, #e8650a 100%)`,
+          padding: "28px 28px 24px",
+          textAlign: "center",
+        }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", delay: 0.1, stiffness: 300, damping: 18 }}
+            style={{ fontSize: 48, marginBottom: 10 }}
+          >
+            🏷️
+          </motion.div>
+          <h2 style={{
+            fontSize: 22, fontWeight: 800, color: "#FFF",
+            fontFamily: T.font, letterSpacing: "-0.02em", margin: "0 0 6px",
+          }}>
+            Closing Time Bundle!
+          </h2>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: T.fontText, margin: "0 0 14px" }}>
+            We're closing soon — grab this random bundle for <strong>35% off</strong>
+          </p>
+          <div style={{
+            display: "inline-block",
+            background: "rgba(255,255,255,0.2)", borderRadius: 20,
+            padding: "5px 16px", fontSize: 13, fontWeight: 700,
+            color: "#FFF", fontFamily: T.fontText,
+          }}>
+            💰 You save ${savings.toFixed(2)}!
+          </div>
+        </div>
+
+        {/* Bundle items */}
+        <div style={{ padding: "20px 24px 24px" }}>
+          <p style={{
+            fontSize: 11, fontWeight: 700, color: T.sub, fontFamily: T.fontText,
+            letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12,
+          }}>
+            What's in your bundle
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+            {bundle.map(item => (
+              <div key={item.id} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "10px 14px", borderRadius: 12,
+                background: T.bg, border: `1px solid ${T.border}`,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 26 }}>{item.img}</span>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font, margin: 0 }}>
+                      {item.name}
+                    </p>
+                    <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, margin: "2px 0 0" }}>
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+                  <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, margin: 0, textDecoration: "line-through" }}>
+                    ${item.price.toFixed(2)}
+                  </p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: T.orange, fontFamily: T.font, margin: 0 }}>
+                    ${(item.price * 0.65).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Total */}
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "12px 16px", borderRadius: 12,
+            background: `${T.orange}0D`, border: `1px solid ${T.orange}28`,
+            marginBottom: 18,
+          }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font }}>
+              Bundle Total
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, textDecoration: "line-through" }}>
+                ${originalTotal.toFixed(2)}
+              </span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: T.orange, fontFamily: T.font }}>
+                ${discountedTotal.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={onDecline}
+              style={{
+                flex: 1, padding: "12px", borderRadius: 12,
+                border: `1px solid ${T.border}`, background: T.bg,
+                color: T.sub, fontSize: 14, fontWeight: 600,
+                cursor: "pointer", fontFamily: T.fontText,
+              }}
+            >
+              No thanks
+            </button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onAccept(bundle)}
+              style={{
+                flex: 2, padding: "12px", borderRadius: 12,
+                border: "none", background: T.orange,
+                color: "#FFF", fontSize: 15, fontWeight: 700,
+                cursor: "pointer", fontFamily: T.font,
+              }}
+            >
+              Add Bundle to Cart 🛒
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+// ─── Top Navbar ─────────────────────────────────────────────────────────────
+
+function CustomerNav({ cartCount, cartTotal, setCustomerTab }) {
   return (
     <div style={{
       position: "sticky", top: 52, zIndex: 100,
@@ -71,9 +223,6 @@ function CustomerNav({ cartCount, cartTotal, setCustomerTab, view, setView, sele
       padding: "0 40px",
       display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, height: 60,
     }}>
-
-
-      {/* Cart button */}
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
@@ -92,9 +241,8 @@ function CustomerNav({ cartCount, cartTotal, setCustomerTab, view, setView, sele
           <>
             <span>{cartCount} item{cartCount !== 1 ? "s" : ""}</span>
             <span style={{
-              padding: "2px 8px", borderRadius: 8,
-              background: "rgba(255,255,255,0.2)",
-              fontSize: 13,
+              background: "rgba(255,255,255,0.25)", borderRadius: 8,
+              padding: "2px 8px", fontSize: 13,
             }}>${cartTotal.toFixed(2)}</span>
           </>
         ) : (
@@ -105,31 +253,28 @@ function CustomerNav({ cartCount, cartTotal, setCustomerTab, view, setView, sele
   );
 }
 
-// ─── Restaurant Card ───
-function RestaurantCard({ restaurant, onClick }) {
-  const bannerColors = ["#FFE8D6", "#D6E8FF", "#D6FFE8", "#FFD6E8", "#E8D6FF", "#FFFBD6"];
-  const color = bannerColors[restaurant.id % bannerColors.length];
+// ─── Restaurant Card ─────────────────────────────────────────────────────────
 
+function RestaurantCard({ restaurant, onClick }) {
   return (
     <motion.div
-      whileHover={{ y: -4, boxShadow: "0 12px 40px rgba(0,0,0,0.12)" }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -4, boxShadow: "0 8px 32px rgba(0,0,0,0.10)" }}
       onClick={onClick}
       style={{
-        background: T.card, borderRadius: 16, overflow: "hidden",
-        border: `1px solid ${T.border}`, cursor: "pointer",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)", transition: "box-shadow 0.2s",
+        background: T.card, borderRadius: 20,
+        border: `1px solid ${T.border}`,
+        overflow: "hidden", cursor: "pointer",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+        transition: "box-shadow 0.2s",
       }}
     >
-      {/* Banner */}
       <div style={{
-        height: 140, background: color,
+        height: 160, background: T.bg,
         display: "flex", alignItems: "center", justifyContent: "center",
         overflow: "hidden", position: "relative",
       }}>
-        {(typeof restaurant.img === "string" && (
-          restaurant.img.startsWith("/") || restaurant.img.startsWith("./") ||
-          restaurant.img.startsWith("../") || restaurant.img.startsWith("http") ||
+        {(typeof restaurant.img === "object" || (
+          typeof restaurant.img === "string" &&
           /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(restaurant.img)
         )) ? (
           <img
@@ -142,7 +287,6 @@ function RestaurantCard({ restaurant, onClick }) {
         )}
       </div>
 
-      {/* Info */}
       <div style={{ padding: "14px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font, marginBottom: 4 }}>
@@ -179,7 +323,8 @@ function RestaurantCard({ restaurant, onClick }) {
   );
 }
 
-// ─── Cart Sidebar ───
+// ─── Cart Sidebar ────────────────────────────────────────────────────────────
+
 function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, setCustomerTab }) {
   return (
     <div style={{
@@ -208,12 +353,8 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
         {cart.length === 0 ? (
           <div style={{ padding: "40px 20px", textAlign: "center" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🛒</div>
-            <p style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>
-              Your cart is empty
-            </p>
-            <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
-              Add items to get started
-            </p>
+            <p style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText }}>Your cart is empty</p>
+            <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>Add items to get started</p>
           </div>
         ) : (
           <>
@@ -264,7 +405,6 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
               ))}
             </div>
 
-            {/* Totals */}
             <div style={{ padding: "12px 20px", borderTop: `1px solid ${T.border}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText }}>Subtotal</span>
@@ -296,13 +436,33 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
   );
 }
 
-export default function CustomerView({ cart, addToCart, removeFromCart, clearCart, customerTab, setCustomerTab }) {
+// ─── Main CustomerView ───────────────────────────────────────────────────────
+
+export default function CustomerView({ cart, addToCart, removeFromCart, clearCart, customerTab, setCustomerTab, closingMode }) {
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [showBundle, setShowBundle] = useState(false);
+  const [bundle, setBundle] = useState([]);
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
+
+  // Show the bundle popup when entering Boolen Kitchen with closing mode on
+  useEffect(() => {
+    if (closingMode && selected?.name === "Boolen Kitchen" && view === "menu") {
+      const shuffled = [...sampleMenu].sort(() => Math.random() - 0.5);
+      setBundle(shuffled.slice(0, 3));
+      setShowBundle(true);
+    } else {
+      setShowBundle(false);
+    }
+  }, [closingMode, selected, view]);
+
+  const handleBundleAccept = (items) => {
+    items.forEach(item => addToCart({ ...item, price: parseFloat((item.price * 0.65).toFixed(2)) }));
+    setShowBundle(false);
+  };
 
   // ─── Cart Page ───
   if (customerTab === "cart") {
@@ -349,7 +509,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             maxWidth: 520, width: "100%",
           }}
         >
-          {/* Animated checkmark */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -366,24 +525,16 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             ✓
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <h1 style={{
               fontSize: 30, fontWeight: 800, color: T.text,
               fontFamily: T.font, letterSpacing: "-0.03em", marginBottom: 10,
             }}>
               Order Placed!
             </h1>
-            <p style={{
-              fontSize: 16, color: T.sub, fontFamily: T.fontText,
-              lineHeight: 1.6, marginBottom: 36,
-            }}>
+            <p style={{ fontSize: 16, color: T.sub, fontFamily: T.fontText, lineHeight: 1.6, marginBottom: 36 }}>
               Your order has been received.
             </p>
-
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
@@ -413,20 +564,15 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
 
   return (
     <div style={{ background: T.bg, minHeight: "calc(100vh - 52px)" }}>
-      {/* Customer Navbar */}
       <CustomerNav
         cartCount={cartCount}
         cartTotal={cartTotal}
         setCustomerTab={setCustomerTab}
-        view={view}
-        setView={setView}
-        selectedRestaurant={selected}
       />
 
       {/* ─── Restaurant List ─── */}
       {view === "list" && (
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 40px" }}>
-          {/* Hero */}
           <div style={{ marginBottom: 32 }}>
             <h1 style={{
               fontSize: 36, fontWeight: 800, color: T.text,
@@ -439,7 +585,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             </p>
           </div>
 
-          {/* Search bar */}
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
             padding: "12px 20px", borderRadius: 16,
@@ -457,7 +602,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             />
           </div>
 
-          {/* Category pills */}
           <div style={{ display: "flex", gap: 10, marginBottom: 32, flexWrap: "wrap" }}>
             {categories.map(cat => (
               <button
@@ -476,7 +620,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             ))}
           </div>
 
-          {/* Restaurant grid */}
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
@@ -523,129 +666,165 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
               <span style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>
                 {selected.name}
               </span>
+
+              {/* Closing mode badge */}
+              {closingMode && selected.name === "Boolen Kitchen" && (
+                <motion.div
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  style={{
+                    marginLeft: "auto",
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "5px 12px", borderRadius: 20,
+                    background: `${T.orange}15`, border: `1px solid ${T.orange}40`,
+                    fontSize: 12, fontWeight: 700, color: T.orange, fontFamily: T.fontText,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    const shuffled = [...sampleMenu].sort(() => Math.random() - 0.5);
+                    setBundle(shuffled.slice(0, 3));
+                    setShowBundle(true);
+                  }}
+                >
+                  🏷️ Closing Deal Available
+                </motion.div>
+              )}
             </div>
-          <div style={{
-            maxWidth: 1200, margin: "0 auto", padding: "32px 40px",
-            display: "flex", gap: 40, alignItems: "flex-start",
-          }}>
-            {/* Left: Menu content */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Restaurant header */}
-              <div style={{
-                background: T.card, borderRadius: 20,
-                border: `1px solid ${T.border}`,
-                padding: "28px 32px", marginBottom: 28,
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                  <div style={{
-                    width: 80, height: 80, borderRadius: 20, background: T.bg,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    border: `1px solid ${T.border}`, overflow: "hidden",
-                  }}>
-                    <ImgOrEmoji src={selected.img} size={44} alt={selected.name} style={{ borderRadius: 12 }} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, color: T.text, fontFamily: T.font, letterSpacing: "-0.02em" }}>
-                      {selected.name}
-                    </h1>
-                    <p style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
-                      {selected.cuisine} · {selected.priceRange}
-                    </p>
-                    <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span>⭐</span>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: T.text, fontFamily: T.fontText }}>
-                          {selected.rating}
-                        </span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: T.sub }}>
-                        <span>🕐</span>
-                        <span style={{ fontSize: 14, fontFamily: T.fontText }}>{selected.time}</span>
+
+            <div style={{
+              maxWidth: 1200, margin: "0 auto", padding: "32px 40px",
+              display: "flex", gap: 40, alignItems: "flex-start",
+            }}>
+              {/* Left: Menu content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {/* Restaurant header */}
+                <div style={{
+                  background: T.card, borderRadius: 20,
+                  border: `1px solid ${T.border}`,
+                  padding: "28px 32px", marginBottom: 28,
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                    <div style={{
+                      width: 80, height: 80, borderRadius: 20, background: T.bg,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: `1px solid ${T.border}`, overflow: "hidden",
+                    }}>
+                      <ImgOrEmoji src={selected.img} size={44} alt={selected.name} style={{ borderRadius: 12 }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h1 style={{ fontSize: 28, fontWeight: 800, color: T.text, fontFamily: T.font, letterSpacing: "-0.02em" }}>
+                        {selected.name}
+                      </h1>
+                      <p style={{ fontSize: 14, color: T.sub, fontFamily: T.fontText, marginTop: 4 }}>
+                        {selected.cuisine} · {selected.priceRange}
+                      </p>
+                      <div style={{ display: "flex", gap: 16, marginTop: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          <span>⭐</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: T.text, fontFamily: T.fontText }}>
+                            {selected.rating}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, color: T.sub }}>
+                          <span>🕐</span>
+                          <span style={{ fontSize: 14, fontFamily: T.fontText }}>{selected.time}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Menu categories */}
-              {cats.map(cat => (
-                <div key={cat} style={{ marginBottom: 32 }}>
-                  <h2 style={{
-                    fontSize: 20, fontWeight: 700, color: T.text,
-                    fontFamily: T.font, marginBottom: 16,
-                    paddingBottom: 12, borderBottom: `2px solid ${T.border}`,
-                  }}>{cat}</h2>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    {sampleMenu.filter(m => m.cat === cat).map(item => {
-                      const inCart = cart.find(c => c.id === item.id);
-                      return (
-                        <motion.div
-                          key={item.id}
-                          whileHover={{ y: -2 }}
-                          style={{
-                            background: T.card, borderRadius: 16,
-                            border: `1px solid ${T.border}`,
-                            padding: "16px", display: "flex", gap: 14,
-                            alignItems: "flex-start",
-                            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                            position: "relative", overflow: "hidden",
-                          }}
-                        >
-                          <ImgOrEmoji src={item.img} size={40} alt={item.name} style={{ flexShrink: 0, borderRadius: 8 }} />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>
-                              {item.name}
-                            </p>
-                            <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 3, lineHeight: 1.4 }}>
-                              {item.desc}
-                            </p>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
-                              <span style={{ fontSize: 15, fontWeight: 700, color: T.text, fontFamily: T.font }}>
-                                ${item.price.toFixed(2)}
-                              </span>
-                              <AnimatePresence mode="wait" initial={false}>
+                {/* Menu categories */}
+                {cats.map(cat => (
+                  <div key={cat} style={{ marginBottom: 32 }}>
+                    <h2 style={{
+                      fontSize: 20, fontWeight: 700, color: T.text,
+                      fontFamily: T.font, marginBottom: 16,
+                      paddingBottom: 12, borderBottom: `2px solid ${T.border}`,
+                    }}>{cat}</h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      {sampleMenu.filter(m => m.cat === cat).map(item => {
+                        const inCart = cart.find(c => c.id === item.id);
+                        return (
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            style={{
+                              background: T.card, borderRadius: 16,
+                              border: `1px solid ${T.border}`,
+                              padding: "16px", position: "relative",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                              <div style={{ flex: 1 }}>
+                                <p style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font, marginBottom: 4 }}>
+                                  {item.name}
+                                </p>
+                                <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginBottom: 10, lineHeight: 1.4 }}>
+                                  {item.desc}
+                                </p>
+                                <p style={{ fontSize: 15, fontWeight: 700, color: T.accent, fontFamily: T.font }}>
+                                  ${item.price.toFixed(2)}
+                                </p>
+                              </div>
+                              <div style={{
+                                width: 64, height: 64, borderRadius: 12,
+                                background: T.bg, display: "flex",
+                                alignItems: "center", justifyContent: "center",
+                                fontSize: 32, flexShrink: 0,
+                              }}>
+                                {item.img}
+                              </div>
+                            </div>
+
+                            <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+                              <AnimatePresence mode="wait">
                                 {inCart ? (
                                   <motion.div
                                     key="stepper"
-                                    initial={{ scale: 0.8, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
                                     style={{
-                                      display: "flex", alignItems: "center", gap: 4,
-                                      background: T.accent, borderRadius: 20, padding: "3px 6px",
+                                      display: "flex", alignItems: "center", gap: 6,
+                                      background: T.accent, borderRadius: 20, padding: "4px 8px",
                                     }}
                                   >
-                                    <button
+                                    <motion.button
+                                      whileTap={{ scale: 0.9 }}
                                       onClick={() => removeFromCart(item)}
                                       style={{
-                                        width: 24, height: 24, borderRadius: 12, border: "none",
+                                        width: 26, height: 26, borderRadius: 13, border: "none",
                                         background: "rgba(255,255,255,0.25)", color: "#fff",
-                                        fontSize: 16, cursor: "pointer", display: "flex",
+                                        fontSize: 18, cursor: "pointer", display: "flex",
                                         alignItems: "center", justifyContent: "center",
                                         fontWeight: 700, fontFamily: T.font,
                                       }}
-                                    >−</button>
-                                    <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", minWidth: 16, textAlign: "center" }}>
+                                    >−</motion.button>
+                                    <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", minWidth: 18, textAlign: "center", fontFamily: T.font }}>
                                       {inCart.qty}
                                     </span>
-                                    <button
+                                    <motion.button
+                                      whileTap={{ scale: 0.9 }}
                                       onClick={() => addToCart(item)}
                                       style={{
-                                        width: 24, height: 24, borderRadius: 12, border: "none",
+                                        width: 26, height: 26, borderRadius: 13, border: "none",
                                         background: "rgba(255,255,255,0.25)", color: "#fff",
-                                        fontSize: 16, cursor: "pointer", display: "flex",
+                                        fontSize: 18, cursor: "pointer", display: "flex",
                                         alignItems: "center", justifyContent: "center",
-                                        fontWeight: 700, fontFamily: T.font,
+                                        fontWeight: 500, fontFamily: T.font,
                                       }}
-                                    >+</button>
+                                    >+</motion.button>
                                   </motion.div>
                                 ) : (
                                   <motion.button
                                     key="add"
-                                    initial={{ scale: 0.8, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => addToCart(item)}
                                     style={{
@@ -659,25 +838,35 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                                 )}
                               </AnimatePresence>
                             </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+
+              {/* Right: Sticky Cart */}
+              <CartSidebar
+                cart={cart}
+                addToCart={addToCart}
+                removeFromCart={removeFromCart}
+                cartTotal={cartTotal}
+                cartCount={cartCount}
+                setCustomerTab={setCustomerTab}
+              />
             </div>
 
-            {/* Right: Sticky Cart */}
-            <CartSidebar
-              cart={cart}
-              addToCart={addToCart}
-              removeFromCart={removeFromCart}
-              cartTotal={cartTotal}
-              cartCount={cartCount}
-              setCustomerTab={setCustomerTab}
-            />
-          </div>
+            {/* Closing Bundle Modal */}
+            <AnimatePresence>
+              {showBundle && (
+                <ClosingBundleModal
+                  bundle={bundle}
+                  onAccept={handleBundleAccept}
+                  onDecline={() => setShowBundle(false)}
+                />
+              )}
+            </AnimatePresence>
           </div>
         );
       })()}
