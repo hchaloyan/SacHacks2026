@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import T from "./theme";
+import LoginPage from "./LoginPage";
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/business/Dashboard";
-import Orders from "./pages/business/Orders";
-import MenuManager from "./pages/business/MenuManager";
-import BusinessHours from "./pages/business/BusinessHours";
-import Financials from "./pages/business/Financials";
+import Dashboard from "./pages/owner/Dashboard";
+import Orders from "./pages/owner/Orders";
+import MenuManager from "./pages/owner/MenuManager";
+import BusinessHours from "./pages/owner/BusinessHours";
+import Financials from "./pages/owner/Financials";
 import CustomerView from "./pages/customer/CustomerView";
 
 const viewLabels = {
@@ -17,7 +18,7 @@ const viewLabels = {
 };
 
 export default function App() {
-  const [mode, setMode] = useState("owner");
+  const [mode, setMode] = useState(null); // null = logged out, "owner", "customer"
   const [activeTab, setActiveTab] = useState("menu");
   const [customerTab, setCustomerTab] = useState("browse");
   const [cart, setCart] = useState([]);
@@ -39,64 +40,81 @@ export default function App() {
     });
   };
 
+  const handleLogout = () => {
+    setMode(null);
+    setCart([]);
+    setCustomerTab("browse");
+    setActiveTab("menu");
+  };
+
+  // ─── Login Screen ───
+  if (!mode) {
+    return <LoginPage onLogin={setMode} />;
+  }
+
+  // ─── Owner / Business Dashboard ───
+  if (mode === "owner") {
+    return (
+      <div style={{ fontFamily: T.font, display: "flex", minHeight: "100vh" }}>
+        <Sidebar active={activeTab} setActive={setActiveTab} onLogout={handleLogout} />
+        <div style={{ flex: 1, padding: "32px 36px", background: T.bg, overflow: "auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <h1 style={{
+              fontSize: 28, fontWeight: 700, color: T.text, fontFamily: T.font,
+              letterSpacing: "-0.025em", margin: 0,
+            }}>{viewLabels[activeTab]}</h1>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: "8px 18px", borderRadius: 10, border: `1px solid ${T.border}`,
+                background: T.card, color: T.sub, fontSize: 13, fontWeight: 500,
+                cursor: "pointer", fontFamily: T.fontText,
+              }}
+            >Sign Out</button>
+          </div>
+          {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "orders" && <Orders />}
+          {activeTab === "menu" && <MenuManager />}
+          {activeTab === "hours" && <BusinessHours />}
+          {activeTab === "financials" && <Financials />}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Customer View ───
   return (
     <div style={{ fontFamily: T.font }}>
-      {/* Top Toggle */}
+      {/* Top bar with sign out */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 999,
         background: "rgba(255,255,255,0.85)",
         backdropFilter: "blur(20px)",
         borderBottom: `1px solid ${T.border}`,
-        display: "flex", justifyContent: "center", alignItems: "center",
-        padding: "10px 0",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "10px 20px",
       }}>
-        <div style={{
-          display: "flex", background: T.bg, borderRadius: 10, padding: 3,
-        }}>
-          {["owner", "customer"].map(m => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              style={{
-                padding: "8px 24px", borderRadius: 8, border: "none",
-                background: mode === m ? T.card : "transparent",
-                color: mode === m ? T.text : T.sub,
-                fontSize: 14, fontWeight: 600, cursor: "pointer",
-                fontFamily: T.fontText,
-                boxShadow: mode === m ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                transition: "all 0.2s",
-              }}
-            >{m === "owner" ? "Business View" : "Customer View"}</button>
-          ))}
-        </div>
+        <h1 style={{
+          fontSize: 22, fontWeight: 800, color: T.accent, fontFamily: T.font,
+          letterSpacing: "-0.03em", margin: 0,
+        }}>boolen</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "7px 16px", borderRadius: 10, border: `1px solid ${T.border}`,
+            background: T.card, color: T.sub, fontSize: 13, fontWeight: 500,
+            cursor: "pointer", fontFamily: T.fontText,
+          }}
+        >Sign Out</button>
       </div>
-
-      {/* Content */}
       <div style={{ paddingTop: 52 }}>
-        {mode === "owner" ? (
-          <div style={{ display: "flex", minHeight: "calc(100vh - 52px)" }}>
-            <Sidebar active={activeTab} setActive={setActiveTab} />
-            <div style={{ flex: 1, padding: "32px 36px", background: T.bg, overflow: "auto" }}>
-              <h1 style={{
-                fontSize: 28, fontWeight: 700, color: T.text, fontFamily: T.font,
-                letterSpacing: "-0.025em", marginBottom: 24,
-              }}>{viewLabels[activeTab]}</h1>
-              {activeTab === "dashboard" && <Dashboard />}
-              {activeTab === "orders" && <Orders />}
-              {activeTab === "menu" && <MenuManager />}
-              {activeTab === "hours" && <BusinessHours />}
-              {activeTab === "financials" && <Financials />}
-            </div>
-          </div>
-        ) : (
-          <CustomerView
-            cart={cart}
-            addToCart={addToCart}
-            removeFromCart={removeFromCart}
-            customerTab={customerTab}
-            setCustomerTab={setCustomerTab}
-          />
-        )}
+        <CustomerView
+          cart={cart}
+          addToCart={addToCart}
+          removeFromCart={removeFromCart}
+          customerTab={customerTab}
+          setCustomerTab={setCustomerTab}
+        />
       </div>
     </div>
   );
