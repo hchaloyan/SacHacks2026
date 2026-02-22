@@ -1,33 +1,11 @@
 {
-  "menu": [
-    {
-      "id": 1771715117211,
-      "name": "Water",
-      "items": []
-    }
-  ],
+  "menu": [],
   "orders": [
     {
-      "id": 1771734903287,
-      "customerName": "Order Test #3",
-      "address": "1218 1319 Davis CA ",
-      "deliveryType": "bike",
-      "items": [
-        {
-          "id": 3,
-          "name": "Margherita Pizza",
-          "qty": 2,
-          "deliveryPrice": 14.99
-        }
-      ],
-      "total": 31.97,
-      "status": "pending",
-      "createdAt": "2026-02-22T04:35:03.287Z"
-    },
-    {
-      "id": 1771734092309,
-      "customerName": "Order Test #2",
-      "address": "123 Order Test Street, CA, 11111",
+      "id": 1001,
+      "orderNumber": 1001,
+      "customerName": "Order Test #11",
+      "address": "123 Davis St, CA",
       "deliveryType": "bike",
       "items": [
         {
@@ -45,29 +23,12 @@
       ],
       "total": 29.97,
       "status": "pending",
-      "createdAt": "2026-02-22T04:21:32.309Z"
-    },
-    {
-      "id": 1771733737415,
-      "customerName": "BOOTY BOI",
-      "address": "123 Davis St, Davis, CA 11111",
-      "deliveryType": "bike",
-      "items": [
-        {
-          "id": 1,
-          "name": "Classic Burger",
-          "qty": 1,
-          "deliveryPrice": 12.99
-        }
-      ],
-      "total": 14.98,
-      "status": "pending",
-      "createdAt": "2026-02-22T04:15:37.415Z"
+      "createdAt": "2026-02-22T04:55:33.687Z"
     }
   ],
   "hours": {
     "Monday": {
-      "open": "00:00",
+      "open": "11:00",
       "close": "21:00",
       "closed": false
     },
@@ -103,8 +64,9 @@
     }
   },
   "financials": {
-    "totalRevenue": 76.92,
-    "totalOrders": 3,
-    "avgOrderValue": 25.64
-  }
+    "totalRevenue": 29.97,
+    "totalOrders": 1,
+    "avgOrderValue": 29.97
+  },
+  "orderCounter": 1001
 }

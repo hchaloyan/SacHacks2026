@@ -10,21 +10,21 @@ const __dirname = dirname(__filename);
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "10mb" })); // higher limit for base64 images
+app.use(express.json({ limit: "10mb" }));
 
 // ── Database setup ──────────────────────────────────────────────────────────
 const dbPath = join(__dirname, "db.json");
 const adapter = new JSONFile(dbPath);
 const db = new Low(adapter, {
-  menu: [],       // [{ id, name, items: [...] }]  (categories)
-  orders: [],     // [{ id, items, total, status, createdAt }]
-  hours: {},      // { Monday: { open, close, closed }, ... }
-  financials: {}, // { totalRevenue, totalOrders, ... }
+  menu: [],
+  orders: [],
+  hours: {},
+  financials: {},
+  orderCounter: 1000, // sequential order numbers start at 1001
 });
 
 async function initDb() {
   await db.read();
-  // Seed defaults if empty
   if (!db.data.hours || Object.keys(db.data.hours).length === 0) {
     const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     db.data.hours = days.reduce((acc, d) => ({
@@ -35,6 +35,11 @@ async function initDb() {
   }
   if (!db.data.financials || Object.keys(db.data.financials).length === 0) {
     db.data.financials = { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 };
+    await db.write();
+  }
+  // Seed orderCounter if missing (for existing databases)
+  if (db.data.orderCounter === undefined) {
+    db.data.orderCounter = 1000;
     await db.write();
   }
 }
@@ -60,8 +65,10 @@ app.get("/api/orders", async (req, res) => {
 
 app.post("/api/orders", async (req, res) => {
   await db.read();
+  db.data.orderCounter += 1;
   const order = {
-    id: Date.now(),
+    id: db.data.orderCounter,
+    orderNumber: db.data.orderCounter,
     ...req.body,
     createdAt: new Date().toISOString(),
     status: req.body.status || "pending",

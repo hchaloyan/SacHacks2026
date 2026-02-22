@@ -161,7 +161,7 @@ export default function Orders() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <div>
                   <span style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.font }}>
-                    Order #{String(order.id).slice(-5)}
+                    Order #{order.orderNumber || order.id}
                   </span>
                   {order.customerName && (
                     <p style={{ fontSize: 13, color: T.text, fontFamily: T.fontText, marginTop: 2, fontWeight: 500 }}>
