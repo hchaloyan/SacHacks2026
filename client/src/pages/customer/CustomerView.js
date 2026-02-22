@@ -18,10 +18,10 @@ const getImg = (name) => {
 };
 
 const sampleRestaurants = [
-  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["Burgers", "Salads", "American"] },
-  { id: 2, name: "Woodstock's Pizza", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
-  { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, time: "15-25 min", img: getImg("hikari.png"), priceRange: "$$$", tags: ["Sushi", "Ramen", "Japanese"] },
-  { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: getImg("GuadsLogo.jpg"), priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
+  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["0.5 miles", "CAR 8 min", "BIKE 8 min"] },
+  { id: 2, name: "Woodstock's Pizza", cuisine: "Italian", rating: 4.6, img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["0.6 miles", "CAR 8 min", "BIKE 10 min"] },
+  { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, img: getImg("hikari.png"), priceRange: "$$", tags: ["0.4 miles", "CAR 8 min", "BIKE 8 min"] },
+  { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, img: getImg("GuadsLogo.jpg"), priceRange: "$$", tags: ["0.4 miles", "CAR 7 min", "BIKE 6 min"] },
 ];
 
 const sampleMenu = [
@@ -141,13 +141,7 @@ function RestaurantCard({ restaurant, onClick }) {
           {restaurant.cuisine} · {restaurant.priceRange}
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 4,
-            padding: "4px 10px", borderRadius: 20,
-            background: T.bg, fontSize: 12, color: T.sub, fontFamily: T.fontText,
-          }}>
-            🕐 {restaurant.time}
-          </div>
+
           {restaurant.tags.slice(0, 2).map(tag => (
             <div key={tag} style={{
               padding: "4px 10px", borderRadius: 20,
@@ -446,23 +440,6 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
             </p>
           </div>
 
-          <div style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "12px 20px", borderRadius: 16,
-            background: T.card, border: `1px solid ${T.border}`,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: 28,
-            maxWidth: 560,
-          }}>
-            <span style={{ fontSize: 18, color: T.sub }}>🔍</span>
-            <input
-              placeholder="Search restaurants or cuisines..."
-              style={{
-                flex: 1, border: "none", outline: "none", fontSize: 15,
-                fontFamily: T.fontText, background: "transparent", color: T.text,
-              }}
-            />
-          </div>
-
           <div style={{ display: "flex", gap: 10, marginBottom: 32, flexWrap: "wrap" }}>
             {categories.map(cat => (
               <button
@@ -547,7 +524,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                     if (!showBundle && bundle.length > 0) setShowBundle(true);
                   }}
                 >
-                  🏷️ Closing Deal Available!
+                  Closing Deal Available!
                 </motion.div>
               )}
             </div>

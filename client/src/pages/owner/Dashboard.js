@@ -22,7 +22,6 @@ export default function Dashboard({ closingMode, setClosingMode }) {
   const stats = [
     { label: "Today's Orders",     value: String(todayOrders),                                    color: T.accent },
     { label: "Revenue",            value: `$${financials?.totalRevenue?.toFixed(2) || "0.00"}`,  color: T.green },
-    { label: "Active Menu Items",  value: String(menuCount),                                       color: T.orange },
     { label: "Avg. Order Value",   value: `$${financials?.avgOrderValue?.toFixed(2) || "0.00"}`, color: "#AF52DE" },
   ];
 
