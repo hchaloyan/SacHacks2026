@@ -4,6 +4,8 @@ import T from "../../theme";
 import Icons from "../../Icons";
 import CartPage from "./CartPage";
 import CheckoutPage from "./CheckoutPage";
+// FIX #3: Import the standalone ClosingBundleModal instead of using a local duplicate
+import ClosingBundleModal from "./ClosingBundleModal";
 
 const imageContext = require.context('./images', false, /\.(png|jpe?g|svg|webp|avif)$/);
 
@@ -17,7 +19,7 @@ const getImg = (name) => {
 
 const sampleRestaurants = [
   { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["Burgers", "Salads", "American"] },
-  { id: 2, name: "WoodStock's Pizza", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
+  { id: 2, name: "Woodstock's Pizza", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
   { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, time: "15-25 min", img: getImg("hikari.png"), priceRange: "$$$", tags: ["Sushi", "Ramen", "Japanese"] },
   { id: 4, name: "Guads Tacos", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: getImg("GuadsLogo.jpg"), priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
 ];
@@ -45,170 +47,6 @@ function ImgOrEmoji({ src, size = 48, style = {}, alt = "" }) {
     return <img src={src} alt={alt} style={{ width: size, height: size, objectFit: "cover", borderRadius: 8, ...style }} />;
   }
   return <span style={{ fontSize: size, lineHeight: 1, ...style }}>{src}</span>;
-}
-
-// ─── Closing Bundle Modal ────────────────────────────────────────────────────
-
-function ClosingBundleModal({ bundle, onAccept, onDecline }) {
-  const originalTotal = bundle.reduce((s, i) => s + i.price, 0);
-  const discountedTotal = originalTotal * 0.65;
-  const savings = originalTotal - discountedTotal;
-
-  return (
-    <>
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onDecline}
-        style={{
-          position: "fixed", inset: 0, zIndex: 1000,
-          background: "rgba(0,0,0,0.5)",
-          backdropFilter: "blur(4px)",
-        }}
-      />
-
-      {/* Modal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 28 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9, y: 28 }}
-        transition={{ type: "spring", stiffness: 400, damping: 28 }}
-        style={{
-          position: "fixed", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 1001,
-          width: "min(480px, 92vw)",
-          background: T.card,
-          borderRadius: 24,
-          overflow: "hidden",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.25)",
-        }}
-      >
-        {/* Header */}
-        <div style={{
-          background: `linear-gradient(135deg, ${T.orange} 0%, #e8650a 100%)`,
-          padding: "28px 28px 24px",
-          textAlign: "center",
-        }}>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", delay: 0.1, stiffness: 300, damping: 18 }}
-            style={{ fontSize: 48, marginBottom: 10 }}
-          >
-            🏷️
-          </motion.div>
-          <h2 style={{
-            fontSize: 22, fontWeight: 800, color: "#FFF",
-            fontFamily: T.font, letterSpacing: "-0.02em", margin: "0 0 6px",
-          }}>
-            Closing Time Bundle!
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: T.fontText, margin: "0 0 14px" }}>
-            We're closing soon — grab this random bundle for <strong>35% off</strong>
-          </p>
-          <div style={{
-            display: "inline-block",
-            background: "rgba(255,255,255,0.2)", borderRadius: 20,
-            padding: "5px 16px", fontSize: 13, fontWeight: 700,
-            color: "#FFF", fontFamily: T.fontText,
-          }}>
-            💰 You save ${savings.toFixed(2)}!
-          </div>
-        </div>
-
-        {/* Bundle items */}
-        <div style={{ padding: "20px 24px 24px" }}>
-          <p style={{
-            fontSize: 11, fontWeight: 700, color: T.sub, fontFamily: T.fontText,
-            letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12,
-          }}>
-            What's in your bundle
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
-            {bundle.map(item => (
-              <div key={item.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "10px 14px", borderRadius: 12,
-                background: T.bg, border: `1px solid ${T.border}`,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 26 }}>{item.img}</span>
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font, margin: 0 }}>
-                      {item.name}
-                    </p>
-                    <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, margin: "2px 0 0" }}>
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
-                  <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, margin: 0, textDecoration: "line-through" }}>
-                    ${item.price.toFixed(2)}
-                  </p>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: T.orange, fontFamily: T.font, margin: 0 }}>
-                    ${(item.price * 0.65).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Total */}
-          <div style={{
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-            padding: "12px 16px", borderRadius: 12,
-            background: `${T.orange}0D`, border: `1px solid ${T.orange}28`,
-            marginBottom: 18,
-          }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: T.text, fontFamily: T.font }}>
-              Bundle Total
-            </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 13, color: T.sub, fontFamily: T.fontText, textDecoration: "line-through" }}>
-                ${originalTotal.toFixed(2)}
-              </span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: T.orange, fontFamily: T.font }}>
-                ${discountedTotal.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              onClick={onDecline}
-              style={{
-                flex: 1, padding: "12px", borderRadius: 12,
-                border: `1px solid ${T.border}`, background: T.bg,
-                color: T.sub, fontSize: 14, fontWeight: 600,
-                cursor: "pointer", fontFamily: T.fontText,
-              }}
-            >
-              No thanks
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => onAccept(bundle)}
-              style={{
-                flex: 2, padding: "12px", borderRadius: 12,
-                border: "none", background: T.orange,
-                color: "#FFF", fontSize: 15, fontWeight: 700,
-                cursor: "pointer", fontFamily: T.font,
-              }}
-            >
-              Add Bundle to Cart 🛒
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
-    </>
-  );
 }
 
 // ─── Top Navbar ─────────────────────────────────────────────────────────────
@@ -370,7 +208,13 @@ function CartSidebar({ cart, addToCart, removeFromCart, cartTotal, cartCount, se
                       {item.name}
                     </p>
                     <p style={{ fontSize: 12, color: T.sub, fontFamily: T.fontText, marginTop: 2 }}>
+                      {/* FIX #1: Use item.price (already discounted for bundle items) for display */}
                       ${(item.price * item.qty).toFixed(2)}
+                      {item.bundleDiscount && (
+                        <span style={{ color: T.orange, marginLeft: 6, fontWeight: 600 }}>
+                          (Bundle Deal)
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div style={{
@@ -444,23 +288,40 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
   const [activeCategory, setActiveCategory] = useState("All");
   const [showBundle, setShowBundle] = useState(false);
   const [bundle, setBundle] = useState([]);
+  // FIX #2: Track whether the bundle has already been shown for the current restaurant visit
+  const [bundleSeen, setBundleSeen] = useState(false);
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
 
-  // Show the bundle popup when entering Boolen Kitchen with closing mode on
+  // FIX #2: Only show the bundle once per visit. Reset bundleSeen when leaving Boolen Kitchen.
   useEffect(() => {
-    if (closingMode && selected?.name === "Boolen Kitchen" && view === "menu") {
+    if (closingMode && selected?.name === "Boolen Kitchen" && view === "menu" && !bundleSeen) {
       const shuffled = [...sampleMenu].sort(() => Math.random() - 0.5);
-      setBundle(shuffled.slice(0, 3));
+      // FIX #1: Preserve originalPrice on each item so the modal and cart can both
+      // reference the pre-discount price without mutating the source data.
+      setBundle(shuffled.slice(0, 3).map(item => ({ ...item, originalPrice: item.price })));
       setShowBundle(true);
-    } else {
+      setBundleSeen(true);
+    }
+  }, [closingMode, selected, view, bundleSeen]);
+
+  // Reset bundleSeen when the user navigates away from Boolen Kitchen
+  useEffect(() => {
+    if (selected?.name !== "Boolen Kitchen" || view !== "menu") {
+      setBundleSeen(false);
       setShowBundle(false);
     }
-  }, [closingMode, selected, view]);
+  }, [selected, view]);
 
+  // FIX #1: Add bundle items with a discounted price AND a bundleDiscount flag so
+  // the cart can display them correctly without corrupting the source menu data.
   const handleBundleAccept = (items) => {
-    items.forEach(item => addToCart({ ...item, price: parseFloat((item.price * 0.65).toFixed(2)) }));
+    items.forEach(item => addToCart({
+      ...item,
+      price: parseFloat((item.originalPrice * 0.65).toFixed(2)),
+      bundleDiscount: true,
+    }));
     setShowBundle(false);
   };
 
@@ -673,20 +534,20 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
                   style={{
-                    marginLeft: "auto",
+                    position: "fixed", bottom: 24, right: 24, zIndex: 500,
                     display: "flex", alignItems: "center", gap: 6,
-                    padding: "5px 12px", borderRadius: 20,
-                    background: `${T.orange}15`, border: `1px solid ${T.orange}40`,
-                    fontSize: 12, fontWeight: 700, color: T.orange, fontFamily: T.fontText,
+                    padding: "10px 18px", borderRadius: 24,
+                    background: T.orange, border: "none",
+                    fontSize: 13, fontWeight: 700, color: "#FFF", fontFamily: T.fontText,
                     cursor: "pointer",
+                    boxShadow: "0 4px 20px rgba(255,149,0,0.4)",
                   }}
+                  // Allow the user to re-open the bundle modal from the badge after declining
                   onClick={() => {
-                    const shuffled = [...sampleMenu].sort(() => Math.random() - 0.5);
-                    setBundle(shuffled.slice(0, 3));
-                    setShowBundle(true);
+                    if (!showBundle && bundle.length > 0) setShowBundle(true);
                   }}
                 >
-                  🏷️ Closing Deal Available
+                  🏷️ Closing Deal Available!
                 </motion.div>
               )}
             </div>
