@@ -5,13 +5,23 @@ import Icons from "../../Icons";
 import CartPage from "./CartPage";
 import CheckoutPage from "./CheckoutPage";
 
+const imageContext = require.context('./images', false, /\.(png|jpe?g|svg|webp|avif)$/);
+
+const getImg = (name) => {
+  try {
+    // This finds the image in your ./images folder
+    return imageContext(`./${name}`);
+  } catch (err) {
+    // If filename isn't found, it returns the string (good for emojis)
+    return name;
+  }
+};
+
 const sampleRestaurants = [
-  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: "🍽️", priceRange: "$$", tags: ["Burgers", "Salads", "American"] },
-  { id: 2, name: "Pizza Express", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: "🍕", priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
-  { id: 3, name: "Sushi Bay", cuisine: "Japanese", rating: 4.9, time: "15-25 min", img: "🍣", priceRange: "$$$", tags: ["Sushi", "Ramen", "Japanese"] },
-  { id: 4, name: "Taco Town", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: "🌮", priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
-  { id: 5, name: "The Grill House", cuisine: "BBQ", rating: 4.7, time: "30-40 min", img: "🥩", priceRange: "$$$", tags: ["BBQ", "Steaks", "Ribs"] },
-  { id: 6, name: "Green Bowl", cuisine: "Healthy", rating: 4.4, time: "15-25 min", img: "🥗", priceRange: "$$", tags: ["Salads", "Bowls", "Vegan"] },
+  { id: 1, name: "Boolen Kitchen", cuisine: "American", rating: 4.8, time: "20-30 min", img: getImg("boolenstore.jpg"), priceRange: "$$", tags: ["Burgers", "Salads", "American"] },
+  { id: 2, name: "WoodStock's Pizza", cuisine: "Italian", rating: 4.6, time: "25-35 min", img: getImg("woodstocks-pizza.jpg"), priceRange: "$$", tags: ["Pizza", "Pasta", "Italian"] },
+  { id: 3, name: "Hikari", cuisine: "Japanese", rating: 4.9, time: "15-25 min", img: getImg("hikari.png"), priceRange: "$$$", tags: ["Sushi", "Ramen", "Japanese"] },
+  { id: 4, name: "Taco Town", cuisine: "Mexican", rating: 4.5, time: "20-30 min", img: getImg("GuadsLogo.jpg"), priceRange: "$", tags: ["Tacos", "Burritos", "Mexican"] },
 ];
 
 const sampleMenu = [
@@ -24,6 +34,31 @@ const sampleMenu = [
 ];
 
 const categories = ["All", "American", "Italian", "Japanese", "Mexican", "BBQ", "Healthy"];
+
+// ─── Smart Image Helper ───
+// Renders a file path as <img> or an emoji/text as a plain span.
+// Usage: <ImgOrEmoji src={item.img} size={60} style={{...}} />
+function ImgOrEmoji({ src, size = 48, style = {}, alt = "" }) {
+  const isPath = typeof src === "string" && (
+    src.startsWith("/") || src.startsWith("./") || src.startsWith("../") ||
+    src.startsWith("http") ||
+    /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(src)
+  );
+  if (isPath) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        style={{
+          width: size, height: size,
+          objectFit: "cover", borderRadius: 8,
+          ...style,
+        }}
+      />
+    );
+  }
+  return <span style={{ fontSize: size, lineHeight: 1, ...style }}>{src}</span>;
+}
 
 // ─── Top Navbar ───
 function CustomerNav({ cartCount, cartTotal, setCustomerTab, view, setView, selectedRestaurant }) {
@@ -90,8 +125,22 @@ function RestaurantCard({ restaurant, onClick }) {
       <div style={{
         height: 140, background: color,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 60,
-      }}>{restaurant.img}</div>
+        overflow: "hidden", position: "relative",
+      }}>
+        {(typeof restaurant.img === "string" && (
+          restaurant.img.startsWith("/") || restaurant.img.startsWith("./") ||
+          restaurant.img.startsWith("../") || restaurant.img.startsWith("http") ||
+          /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(restaurant.img)
+        )) ? (
+          <img
+            src={restaurant.img}
+            alt={restaurant.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", top: 0, left: 0 }}
+          />
+        ) : (
+          <span style={{ fontSize: 60 }}>{restaurant.img}</span>
+        )}
+      </div>
 
       {/* Info */}
       <div style={{ padding: "14px 16px" }}>
@@ -506,8 +555,10 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                   <div style={{
                     width: 80, height: 80, borderRadius: 20, background: T.bg,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 44, border: `1px solid ${T.border}`,
-                  }}>{selected.img}</div>
+                    border: `1px solid ${T.border}`, overflow: "hidden",
+                  }}>
+                    <ImgOrEmoji src={selected.img} size={44} alt={selected.name} style={{ borderRadius: 12 }} />
+                  </div>
                   <div style={{ flex: 1 }}>
                     <h1 style={{ fontSize: 28, fontWeight: 800, color: T.text, fontFamily: T.font, letterSpacing: "-0.02em" }}>
                       {selected.name}
@@ -555,7 +606,7 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
                             position: "relative", overflow: "hidden",
                           }}
                         >
-                          <span style={{ fontSize: 40, flexShrink: 0 }}>{item.img}</span>
+                          <ImgOrEmoji src={item.img} size={40} alt={item.name} style={{ flexShrink: 0, borderRadius: 8 }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontSize: 15, fontWeight: 600, color: T.text, fontFamily: T.font }}>
                               {item.name}
