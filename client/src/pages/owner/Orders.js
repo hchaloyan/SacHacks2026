@@ -19,31 +19,32 @@ export default function Orders() {
   const prevOrderIds = useRef(new Set());
   const [newOrderIds, setNewOrderIds] = useState(new Set());
 
-  const fetchOrders = async (isInitial = false) => {
-    try {
-      const data = await api.getOrders();
-      if (!isInitial) {
-        const incoming = data.filter(o => !prevOrderIds.current.has(o.id));
-        if (incoming.length > 0) {
-          setNewOrderIds(prev => new Set([...prev, ...incoming.map(o => o.id)]));
-          // Clear "new" highlight after 8 seconds
-          setTimeout(() => {
-            setNewOrderIds(prev => {
-              const next = new Set(prev);
-              incoming.forEach(o => next.delete(o.id));
-              return next;
-            });
-          }, 8000);
-        }
+const fetchOrders = async (isInitial = false) => {
+  try {
+    const data = await api.getOrders();
+    const boolenOrders = data.filter(o => o.restaurantId === 1 || o.restaurantId == null);
+
+    if (!isInitial) {
+      const incoming = boolenOrders.filter(o => !prevOrderIds.current.has(o.id));
+      if (incoming.length > 0) {
+        setNewOrderIds(prev => new Set([...prev, ...incoming.map(o => o.id)]));
+        setTimeout(() => {
+          setNewOrderIds(prev => {
+            const next = new Set(prev);
+            incoming.forEach(o => next.delete(o.id));
+            return next;
+          });
+        }, 8000);
       }
-      prevOrderIds.current = new Set(data.map(o => o.id));
-      setOrders(data);
-    } catch (err) {
-      console.error("Failed to load orders:", err);
-    } finally {
-      if (isInitial) setLoading(false);
     }
-  };
+    prevOrderIds.current = new Set(boolenOrders.map(o => o.id));
+    setOrders(boolenOrders);
+  } catch (err) {
+    console.error("Failed to load orders:", err);
+  } finally {
+    if (isInitial) setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchOrders(true);

@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import T from "../../theme";
 
-export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
+export default function CheckoutPage({ cart, cartTotal, setCustomerTab, restaurant }) {
+
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [deliveryType, setDeliveryType] = useState("bike");
@@ -34,6 +35,8 @@ export default function CheckoutPage({ cart, cartTotal, setCustomerTab }) {
     address,
     deliveryType,
     status: "pending",
+    restaurantId: restaurant?.id ?? null,
+    restaurantName: restaurant?.name ?? null,
   };
 
   try {

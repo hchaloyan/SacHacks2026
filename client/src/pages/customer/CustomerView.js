@@ -337,10 +337,11 @@ export default function CustomerView({ cart, addToCart, removeFromCart, clearCar
   if (customerTab === "checkout") {
     return (
       <CheckoutPage
-        cart={cart}
-        cartTotal={cartTotal}
-        setCustomerTab={setCustomerTab}
-      />
+  cart={cart}
+  cartTotal={cartTotal}
+  setCustomerTab={setCustomerTab}
+  restaurant={selected}
+/>
     );
   }
 
