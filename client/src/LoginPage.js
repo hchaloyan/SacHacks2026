@@ -184,18 +184,6 @@ export default function LoginPage({ onLogin }) {
             {loading ? "Signing in…" : "Sign In"}
           </button>
         </div>
-
-        {/* Hint */}
-        <p style={{
-          textAlign: "center",
-          fontSize: 12,
-          color: T.sub,
-          marginTop: 20,
-          lineHeight: 1.5,
-        }}>
-          Business owners: use your admin credentials.<br />
-          Customers: sign in with any username &amp; password.
-        </p>
       </div>
     </div>
   );
